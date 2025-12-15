@@ -3,7 +3,7 @@
 //! These tests verify the streaming behavior of the engine
 //! with real rules, focusing on chunk boundaries and state management.
 
-use streamguard::{GuardEngine, rules::{ForbiddenSequenceRule, SequenceConfig}};
+use streamguard::{GuardEngine, rules::{ForbiddenSequenceRule, SequenceConfig, PatternRule, PatternPreset}};
 
 #[test]
 fn test_streaming_forbidden_sequence() {
@@ -273,4 +273,139 @@ fn test_combined_strict_and_stop_words() {
     engine.reset();
     assert!(engine.feed("execute not ").is_allow());
     assert!(engine.feed("command").is_allow());
+}
+
+// Pattern matching tests
+
+#[test]
+fn test_email_detection_streaming() {
+    let mut engine = GuardEngine::new();
+    engine.add_rule(Box::new(PatternRule::email("email detected")));
+
+    // Email split across chunks
+    assert!(engine.feed("Contact me at ").is_allow());
+    assert!(engine.feed("john").is_allow());
+    assert!(engine.feed("@example").is_allow());
+    
+    let decision = engine.feed(".com for info");
+    assert!(decision.is_block(), "Should detect email across chunks");
+}
+
+#[test]
+fn test_email_simple_usage() {
+    let mut engine = GuardEngine::new();
+    engine.add_rule(Box::new(PatternRule::email("found email")));
+
+    // Single chunk with email
+    assert!(engine.feed("My email is user@domain.com").is_block());
+}
+
+#[test]
+fn test_email_strict_mode() {
+    let mut engine = GuardEngine::new();
+    engine.add_rule(Box::new(PatternRule::email_strict("email leak")));
+
+    assert!(engine.feed("admin@company.org").is_block());
+}
+
+#[test]
+fn test_url_detection() {
+    let mut engine = GuardEngine::new();
+    engine.add_rule(Box::new(PatternRule::url("URL detected")));
+
+    assert!(engine.feed("Visit https://example.com").is_block());
+}
+
+#[test]
+fn test_ipv4_detection() {
+    let mut engine = GuardEngine::new();
+    engine.add_rule(Box::new(PatternRule::ipv4("IP address detected")));
+
+    assert!(engine.feed("Server: 192.168.1.1").is_block());
+}
+
+#[test]
+fn test_credit_card_detection() {
+    let mut engine = GuardEngine::new();
+    engine.add_rule(Box::new(PatternRule::credit_card("credit card detected")));
+
+    assert!(engine.feed("Card: 4532-1234-5678-9010").is_block());
+}
+
+#[test]
+fn test_pattern_from_preset() {
+    let mut engine = GuardEngine::new();
+    engine.add_rule(Box::new(PatternRule::from_preset(
+        PatternPreset::Email,
+        "email found"
+    )));
+
+    assert!(engine.feed("test@example.com").is_block());
+}
+
+#[test]
+fn test_custom_pattern() {
+    let mut engine = GuardEngine::new();
+    engine.add_rule(Box::new(PatternRule::custom(
+        "CONFIDENTIAL",
+        "found confidential marker",
+        "confidential keyword"
+    )));
+
+    assert!(engine.feed("This is CONFIDENTIAL data").is_block());
+}
+
+#[test]
+fn test_multiple_pattern_rules() {
+    let mut engine = GuardEngine::new();
+    
+    engine.add_rule(Box::new(PatternRule::email("email")));
+    engine.add_rule(Box::new(PatternRule::url("url")));
+    engine.add_rule(Box::new(PatternRule::ipv4("ip")));
+
+    // Test email blocks
+    assert!(engine.feed("Contact: user@example.com").is_block());
+    
+    // Test URL blocks (new stream)
+    engine.reset();
+    assert!(engine.feed("Visit https://test.com").is_block());
+    
+    // Test IP blocks (new stream)
+    engine.reset();
+    assert!(engine.feed("Server: 10.0.0.1").is_block());
+}
+
+#[test]
+fn test_pattern_with_sequence_rules() {
+    let mut engine = GuardEngine::new();
+    
+    // Mix pattern and sequence rules
+    engine.add_rule(Box::new(PatternRule::email("email leak")));
+    engine.add_rule(Box::new(ForbiddenSequenceRule::with_gaps(
+        vec!["password", "is"],
+        "credential leak"
+    )));
+
+    // Pattern rule should catch email
+    assert!(engine.feed("Email: admin@company.com").is_block());
+    
+    // Sequence rule should catch password sequence
+    engine.reset();
+    assert!(engine.feed("The password ").is_allow());
+    assert!(engine.feed("is secret123").is_block());
+}
+
+#[test]
+fn test_pattern_no_false_positives() {
+    let mut engine = GuardEngine::new();
+    engine.add_rule(Box::new(PatternRule::email("email")));
+
+    // These should not trigger
+    assert!(engine.feed("No email here").is_allow());
+    
+    engine.reset();
+    assert!(engine.feed("Just an @ symbol").is_allow());
+    
+    engine.reset();
+    assert!(engine.feed("Or a.dot without @").is_allow());
 }
