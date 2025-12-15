@@ -112,6 +112,7 @@ async function processStream() {
 
     try {
         let accumulatedOutput = '';
+        let wasRewritten = false;
         
         // Process in small chunks (simulating streaming)
         const chunkSize = 5; // characters per chunk
@@ -131,11 +132,16 @@ async function processStream() {
                 updateStatus();
                 return;
             } else if (decision.type === 'rewrite') {
+                // Replace accumulated output with the rewritten version
                 accumulatedOutput = decision.replacement;
+                wasRewritten = true;
                 outputDiv.textContent = accumulatedOutput;
                 outputDiv.className = 'output rewritten';
-                badge.textContent = 'REWRITTEN';
+                badge.textContent = 'REWRITING...';
                 badge.className = 'badge rewrite';
+                
+                // Engine continues from this point - no reset needed
+                // The rewrite has been applied, continue with next chunks normally
             }
 
             updateStatus();
@@ -144,8 +150,13 @@ async function processStream() {
             await new Promise(resolve => setTimeout(resolve, 50));
         }
 
-        badge.textContent = 'ALLOWED';
-        badge.className = 'badge allow';
+        if (wasRewritten) {
+            badge.textContent = 'REWRITTEN';
+            badge.className = 'badge rewrite';
+        } else {
+            badge.textContent = 'ALLOWED';
+            badge.className = 'badge allow';
+        }
     } catch (error) {
         console.error('Streaming error:', error);
         showError('Streaming error: ' + error.message);

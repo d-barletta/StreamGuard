@@ -152,8 +152,14 @@ To run the demo locally:
 # Build WASM module
 wasm-pack build --target web --out-dir examples/browser-demo/pkg
 
-# Serve the demo
-cd examples/browser-demo && python3 -m http.server 8080
+# Go to demo folder
+cd examples/browser-demo
+
+# Option 1: Node.js (requires http-server: npm install -g http-server)
+npm run serve
+
+# Option 2: Python
+python3 -m http.server 8080
 ```
 
 Then open [http://localhost:8080](http://localhost:8080) in your browser.

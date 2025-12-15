@@ -4,7 +4,7 @@
   "description": "Browser demo for StreamGuard guardrail engine",
   "scripts": {
     "build:wasm": "cd ../.. && wasm-pack build --target web --out-dir examples/browser-demo/pkg",
-    "serve": "python3 -m http.server 8080",
+    "serve": "http-server . -p 8080 -c-1",
     "dev": "npm run build:wasm && npm run serve"
   },
   "keywords": [
@@ -15,5 +15,8 @@
     "security"
   ],
   "author": "d-barletta",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
 }
