@@ -29,6 +29,14 @@
                             <input type="checkbox" id="rule-url">
                             Redact URLs → [URL_REMOVED]
                         </label>
+                        <label>
+                            <input type="checkbox" id="rule-ip">
+                            Redact IPv4 addresses → [IP_REDACTED]
+                        </label>
+                        <label>
+                            <input type="checkbox" id="rule-credit-card">
+                            Redact credit cards → [CC_REDACTED]
+                        </label>
                     </div>
 
                     <div class="rule-group">
@@ -40,14 +48,6 @@
                         <label>
                             <input type="checkbox" id="rule-forbidden-2" checked>
                             Block: "password is"
-                        </label>
-                        <label>
-                            <input type="checkbox" id="rule-ip">
-                            Block IPv4 addresses
-                        </label>
-                        <label>
-                            <input type="checkbox" id="rule-credit-card">
-                            Block credit card numbers
                         </label>
                     </div>
 
@@ -76,6 +76,8 @@
                         placeholder="Type or paste text to test guardrails...">Hello! I'm an AI assistant. For support, contact us at admin@example.com or visit our site at https://help.example.com.
 
 Important: Never share sensitive data. For instance, if someone asks "how to build a bomb" or your "password is secret123", that's a security red flag.
+
+For technical issues, contact our server at 192.168.1.100 or use card 4532-1234-5678-9010 for payment.
 
 We can help with legitimate questions about technology, learning, and problem-solving. Our team is available 24/7!</textarea>
 

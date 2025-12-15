@@ -231,6 +231,17 @@ pub extern "system" fn Java_com_streamguard_PatternRule_nativeEmail(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_streamguard_PatternRule_nativeEmailStrict(
+    env: JNIEnv,
+    _class: JClass,
+    reason: JString,
+) -> jlong {
+    let reason_str: String = env.get_string(reason).unwrap().into();
+    let rule = Box::new(PatternRule::email_strict(reason_str));
+    Box::into_raw(rule) as jlong
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_streamguard_PatternRule_nativeEmailRewrite(
     env: JNIEnv,
     _class: JClass,
@@ -275,6 +286,17 @@ pub extern "system" fn Java_com_streamguard_PatternRule_nativeIpv4(
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_streamguard_PatternRule_nativeIpv4Rewrite(
+    env: JNIEnv,
+    _class: JClass,
+    replacement: JString,
+) -> jlong {
+    let replacement_str: String = env.get_string(replacement).unwrap().into();
+    let rule = Box::new(PatternRule::ipv4_rewrite(replacement_str));
+    Box::into_raw(rule) as jlong
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_streamguard_PatternRule_nativeCreditCard(
     env: JNIEnv,
     _class: JClass,
@@ -282,5 +304,16 @@ pub extern "system" fn Java_com_streamguard_PatternRule_nativeCreditCard(
 ) -> jlong {
     let reason_str: String = env.get_string(reason).unwrap().into();
     let rule = Box::new(PatternRule::credit_card(reason_str));
+    Box::into_raw(rule) as jlong
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_streamguard_PatternRule_nativeCreditCardRewrite(
+    env: JNIEnv,
+    _class: JClass,
+    replacement: JString,
+) -> jlong {
+    let replacement_str: String = env.get_string(replacement).unwrap().into();
+    let rule = Box::new(PatternRule::credit_card_rewrite(replacement_str));
     Box::into_raw(rule) as jlong
 }

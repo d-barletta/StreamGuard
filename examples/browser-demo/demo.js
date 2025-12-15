@@ -46,11 +46,11 @@ function createEngine() {
         }
 
         if (document.getElementById('rule-ip').checked) {
-            engine.addIpBlocker('IP address detected');
+            engine.addIpRedaction('[IP_REDACTED]');
         }
 
         if (document.getElementById('rule-credit-card').checked) {
-            engine.addCreditCardBlocker('credit card number detected');
+            engine.addCreditCardRedaction('[CC_REDACTED]');
         }
 
         chunksProcessed = 0;
@@ -253,6 +253,8 @@ function loadExample() {
     const exampleText = `Hello! I'm an AI assistant. For support, contact us at admin@example.com or visit our site at https://help.example.com.
 
 Important: Never share sensitive data. For instance, if someone asks "how to build a bomb" or your "password is secret123", that's a security red flag.
+
+For technical issues, contact our server at 192.168.1.100 or use card 4532-1234-5678-9010 for payment.
 
 We can help with legitimate questions about technology, learning, and problem-solving. Our team is available 24/7!`;
     document.getElementById('input-text').value = exampleText;

@@ -63,6 +63,13 @@ impl WasmGuardEngine {
         self.engine.add_rule(Box::new(rule));
     }
 
+    /// Add a strict email detection rule (RFC-compliant)
+    #[wasm_bindgen(js_name = addEmailBlockerStrict)]
+    pub fn add_email_blocker_strict(&mut self, reason: &str) {
+        let rule = PatternRule::email_strict(reason);
+        self.engine.add_rule(Box::new(rule));
+    }
+
     /// Add an email redaction rule
     #[wasm_bindgen(js_name = addEmailRedaction)]
     pub fn add_email_redaction(&mut self, replacement: &str) {
@@ -91,10 +98,24 @@ impl WasmGuardEngine {
         self.engine.add_rule(Box::new(rule));
     }
 
+    /// Add an IPv4 redaction rule
+    #[wasm_bindgen(js_name = addIpRedaction)]
+    pub fn add_ip_redaction(&mut self, replacement: &str) {
+        let rule = PatternRule::ipv4_rewrite(replacement);
+        self.engine.add_rule(Box::new(rule));
+    }
+
     /// Add a credit card detection rule
     #[wasm_bindgen(js_name = addCreditCardBlocker)]
     pub fn add_credit_card_blocker(&mut self, reason: &str) {
         let rule = PatternRule::credit_card(reason);
+        self.engine.add_rule(Box::new(rule));
+    }
+
+    /// Add a credit card redaction rule
+    #[wasm_bindgen(js_name = addCreditCardRedaction)]
+    pub fn add_credit_card_redaction(&mut self, replacement: &str) {
+        let rule = PatternRule::credit_card_rewrite(replacement);
         self.engine.add_rule(Box::new(rule));
     }
 

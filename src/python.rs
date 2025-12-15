@@ -104,6 +104,13 @@ impl PyPatternRule {
     }
     
     #[staticmethod]
+    fn email_strict(reason: String) -> Self {
+        Self {
+            inner: RustPatternRule::email_strict(reason),
+        }
+    }
+    
+    #[staticmethod]
     fn email_rewrite(replacement: String) -> Self {
         Self {
             inner: RustPatternRule::email_rewrite(replacement),
@@ -132,9 +139,23 @@ impl PyPatternRule {
     }
     
     #[staticmethod]
+    fn ipv4_rewrite(replacement: String) -> Self {
+        Self {
+            inner: RustPatternRule::ipv4_rewrite(replacement),
+        }
+    }
+    
+    #[staticmethod]
     fn credit_card(reason: String) -> Self {
         Self {
             inner: RustPatternRule::credit_card(reason),
+        }
+    }
+    
+    #[staticmethod]
+    fn credit_card_rewrite(replacement: String) -> Self {
+        Self {
+            inner: RustPatternRule::credit_card_rewrite(replacement),
         }
     }
 }
