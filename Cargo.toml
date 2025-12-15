@@ -20,6 +20,7 @@ java = ["jni"]
 
 [dependencies]
 # Keep dependencies minimal - core engine should be dependency-free
+aho-corasick = { version = "1.1", default-features = false, features = ["std"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2"
