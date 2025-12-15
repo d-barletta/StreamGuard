@@ -217,7 +217,7 @@ Interactive web interface demonstrating real-time guardrails with WASM.
 
 ```bash
 cd examples/browser-demo
-npm install && npm start
+npm install && npm run serve
 # Open http://localhost:8080
 ```
 
