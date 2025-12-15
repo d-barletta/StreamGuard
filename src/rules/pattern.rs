@@ -137,6 +137,8 @@ pub struct PatternRule {
     buffer: String,
     /// Reason to return when blocking
     reason: String,
+    /// Replacement text for rewrites (None = block mode)
+    replacement: Option<String>,
 }
 
 impl PatternRule {
@@ -146,6 +148,7 @@ impl PatternRule {
             config: PatternConfig::from_preset(preset),
             buffer: String::new(),
             reason: reason.to_string(),
+            replacement: None,
         }
     }
 
@@ -174,12 +177,53 @@ impl PatternRule {
         Self::from_preset(PatternPreset::CreditCard, reason)
     }
 
+    /// Create an email rewrite rule
+    pub fn email_rewrite(replacement: &str) -> Self {
+        Self {
+            config: PatternConfig::from_preset(PatternPreset::Email),
+            buffer: String::new(),
+            reason: "email redacted".to_string(),
+            replacement: Some(replacement.to_string()),
+        }
+    }
+
+    /// Create a URL rewrite rule
+    pub fn url_rewrite(replacement: &str) -> Self {
+        Self {
+            config: PatternConfig::from_preset(PatternPreset::Url),
+            buffer: String::new(),
+            reason: "url redacted".to_string(),
+            replacement: Some(replacement.to_string()),
+        }
+    }
+
+    /// Create an IPv4 rewrite rule
+    pub fn ipv4_rewrite(replacement: &str) -> Self {
+        Self {
+            config: PatternConfig::from_preset(PatternPreset::Ipv4),
+            buffer: String::new(),
+            reason: "ip redacted".to_string(),
+            replacement: Some(replacement.to_string()),
+        }
+    }
+
+    /// Create a credit card rewrite rule
+    pub fn credit_card_rewrite(replacement: &str) -> Self {
+        Self {
+            config: PatternConfig::from_preset(PatternPreset::CreditCard),
+            buffer: String::new(),
+            reason: "card redacted".to_string(),
+            replacement: Some(replacement.to_string()),
+        }
+    }
+
     /// Create a custom pattern rule with full configuration
     pub fn custom(pattern: &str, reason: &str, description: &str) -> Self {
         Self {
             config: PatternConfig::custom(pattern, description),
             buffer: String::new(),
             reason: reason.to_string(),
+            replacement: None,
         }
     }
 
@@ -189,6 +233,7 @@ impl PatternRule {
             config,
             buffer: String::new(),
             reason: reason.to_string(),
+            replacement: None,
         }
     }
 
@@ -291,6 +336,147 @@ impl PatternRule {
         // Credit cards typically have 13-19 digits, most commonly 16
         digit_count >= 13 && digit_count <= 19
     }
+
+    /// Perform rewrite by replacing all pattern matches with replacement text
+    fn rewrite_text(&self, text: &str, replacement: &str) -> String {
+        // Simple implementation: find and replace all matches
+        // For email
+        if self.config.description.contains("email") {
+            return self.rewrite_emails(text, replacement);
+        }
+
+        // For URLs
+        if self.config.description.contains("URL") {
+            return self.rewrite_urls(text, replacement);
+        }
+
+        // For IPv4
+        if self.config.description.contains("IPv4") {
+            return self.rewrite_ipv4(text, replacement);
+        }
+
+        // For credit cards
+        if self.config.description.contains("credit card") {
+            return self.rewrite_credit_cards(text, replacement);
+        }
+
+        text.to_string()
+    }
+
+    fn rewrite_emails(&self, text: &str, replacement: &str) -> String {
+        let mut result = String::new();
+        let mut current = String::new();
+        let mut in_email = false;
+        let mut has_at = false;
+        let mut has_dot_after_at = false;
+        
+        for ch in text.chars() {
+            if ch.is_alphanumeric() || ch == '@' || ch == '.' || ch == '_' || ch == '-' || ch == '+' || ch == '%' {
+                current.push(ch);
+                if ch == '@' {
+                    has_at = true;
+                }
+                if has_at && ch == '.' {
+                    has_dot_after_at = true;
+                    in_email = true;
+                }
+            } else {
+                // End of potential email
+                if in_email && has_at && has_dot_after_at && current.len() > 5 {
+                    // Looks like an email - replace it
+                    result.push_str(replacement);
+                } else {
+                    result.push_str(&current);
+                }
+                result.push(ch);
+                current.clear();
+                in_email = false;
+                has_at = false;
+                has_dot_after_at = false;
+            }
+        }
+        
+        // Handle end of string
+        if in_email && has_at && has_dot_after_at && current.len() > 5 {
+            result.push_str(replacement);
+        } else {
+            result.push_str(&current);
+        }
+        
+        result
+    }
+
+    fn rewrite_urls(&self, text: &str, replacement: &str) -> String {
+        let mut result = text.to_string();
+        
+        // Find http:// or https://
+        for protocol in &["https://", "http://"] {
+            while let Some(start) = result.find(protocol) {
+                // Find end of URL (next whitespace or end of string)
+                let after_start = &result[start..];
+                let end_offset = after_start.find(|c: char| c.is_whitespace())
+                    .unwrap_or(after_start.len());
+                let url = &result[start..start + end_offset];
+                
+                result = result.replace(url, replacement);
+            }
+        }
+        
+        result
+    }
+    fn rewrite_ipv4(&self, text: &str, replacement: &str) -> String {
+        let mut result = text.to_string();
+        
+        for word in text.split_whitespace() {
+            let parts: Vec<&str> = word.split('.').collect();
+            if parts.len() == 4 {
+                let all_numeric = parts.iter().all(|p| {
+                    !p.is_empty() && p.chars().all(|c| c.is_ascii_digit())
+                });
+                if all_numeric {
+                    result = result.replace(word, replacement);
+                }
+            }
+        }
+        
+        result
+    }
+
+    fn rewrite_credit_cards(&self, text: &str, replacement: &str) -> String {
+        // Look for card patterns and replace them
+        let mut result = String::new();
+        let mut current = String::new();
+        let mut digit_count = 0;
+        
+        for ch in text.chars() {
+            if ch.is_ascii_digit() {
+                current.push(ch);
+                digit_count += 1;
+            } else if (ch == '-' || ch == ' ') && digit_count > 0 {
+                // Only include separator if we've already started accumulating digits
+                current.push(ch);
+            } else {
+                // Check if we accumulated a card number
+                if digit_count >= 13 && digit_count <= 19 {
+                    result.push_str(replacement);
+                } else {
+                    result.push_str(&current);
+                }
+                result.push(ch);
+                current.clear();
+                digit_count = 0;
+            }
+        }
+        
+        // Handle end of string
+        if digit_count >= 13 && digit_count <= 19 {
+            result.push_str(replacement);
+        } else {
+            result.push_str(&current);
+        }
+        
+        result
+    }
 }
 
 impl Rule for PatternRule {
@@ -304,9 +490,21 @@ impl Rule for PatternRule {
 
         // Check if buffer matches pattern
         if self.matches_pattern(&self.buffer) {
-            Decision::Block {
-                reason: self.reason.clone(),
-            }
+            // Save the decision
+            let decision = if let Some(ref replacement) = self.replacement {
+                let rewritten = self.rewrite_text(&self.buffer, replacement);
+                Decision::Rewrite {
+                    replacement: rewritten,
+                }
+            } else {
+                Decision::Block {
+                    reason: self.reason.clone(),
+                }
+            };
+            
+            // Clear buffer after match - pattern has been detected and handled
+            self.buffer.clear();
+            decision
         } else {
             // Keep buffer size reasonable
             // Only keep the last N characters to handle patterns split across chunks

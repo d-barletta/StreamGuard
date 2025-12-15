@@ -22,6 +22,19 @@ pub enum Decision {
     },
 }
 
+/// Extended decision with scoring information
+#[derive(Debug, Clone, PartialEq)]
+pub struct ScoredDecision {
+    /// The underlying decision
+    pub decision: Decision,
+    /// Individual rule score (0 if no scoring)
+    pub score: u32,
+    /// Accumulated total score across all rules
+    pub total_score: u32,
+    /// Per-rule score breakdown
+    pub score_details: Vec<(String, u32)>,
+}
+
 impl Decision {
     /// Returns true if this decision allows the stream to continue
     #[inline]
@@ -39,6 +52,14 @@ impl Decision {
     #[inline]
     pub fn is_rewrite(&self) -> bool {
         matches!(self, Decision::Rewrite { .. })
+    }
+
+    /// Get the rewritten text if this is a Rewrite decision
+    pub fn rewritten_text(&self) -> Option<&str> {
+        match self {
+            Decision::Rewrite { replacement } => Some(replacement.as_str()),
+            _ => None,
+        }
     }
 }
 
@@ -73,6 +94,11 @@ pub trait Rule: Send + Sync {
     /// Optional: Get a human-readable name for this rule
     fn name(&self) -> &str {
         "unnamed_rule"
+    }
+
+    /// Optional: Get the score for the last decision (0 if no scoring or no match)
+    fn last_score(&self) -> u32 {
+        0
     }
 }
 

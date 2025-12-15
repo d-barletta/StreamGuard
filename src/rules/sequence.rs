@@ -107,6 +107,12 @@ pub struct ForbiddenSequenceRule {
     reason: String,
     /// Configuration for matching behavior
     config: SequenceConfig,
+    /// Score to assign when matched
+    score: u32,
+    /// Replacement text for rewrites (None = block mode)
+    replacement: Option<String>,
+    /// Last score from the most recent decision
+    last_decision_score: u32,
 }
 
 impl ForbiddenSequenceRule {
@@ -124,6 +130,9 @@ impl ForbiddenSequenceRule {
             buffer: String::new(),
             reason: reason.to_string(),
             config,
+            score: 0,
+            replacement: None,
+            last_decision_score: 0,
         }
     }
 
@@ -135,6 +144,34 @@ impl ForbiddenSequenceRule {
     /// Create a strict rule (no gaps, no stop words)
     pub fn strict<S: AsRef<str>>(tokens: Vec<S>, reason: &str) -> Self {
         Self::new(tokens, reason, SequenceConfig::strict())
+    }
+
+    /// Create a rule with scoring
+    pub fn new_with_score<S: AsRef<str>>(tokens: Vec<S>, reason: &str, score: u32) -> Self {
+        Self {
+            tokens: tokens.iter().map(|s| s.as_ref().to_string()).collect(),
+            state: 0,
+            buffer: String::new(),
+            reason: reason.to_string(),
+            config: SequenceConfig::default(),
+            score,
+            replacement: None,
+            last_decision_score: 0,
+        }
+    }
+
+    /// Create a rule with rewrite support
+    pub fn new_with_rewrite<S: AsRef<str>>(tokens: Vec<S>, replacement: &str) -> Self {
+        Self {
+            tokens: tokens.iter().map(|s| s.as_ref().to_string()).collect(),
+            state: 0,
+            buffer: String::new(),
+            reason: "rewrite forbidden sequence".to_string(),
+            config: SequenceConfig::default(),
+            score: 0,
+            replacement: Some(replacement.to_string()),
+            last_decision_score: 0,
+        }
     }
 
     /// Check if buffer contains any stop word and reset if found
@@ -230,11 +267,41 @@ impl Rule for ForbiddenSequenceRule {
             return Decision::Allow;
         }
 
+        // Save original buffer content before check_match modifies it
+        let original_buffer = self.buffer.clone();
+        let original_chunk = chunk.to_string();
+        
         if self.check_match(chunk) {
-            Decision::Block {
-                reason: self.reason.clone(),
+            // Match found - record score
+            self.last_decision_score = self.score;
+            
+            // Reset state after match to avoid repeated matches
+            self.state = 0;
+            self.buffer.clear();
+            
+            // Check if this is a rewrite rule
+            if let Some(ref replacement) = self.replacement {
+                // For rewrite, work with the complete text (original buffer + chunk)
+                let complete_text = format!("{}{}", original_buffer, original_chunk);
+                let mut rewritten = complete_text.clone();
+                
+                // Replace each matched token with the replacement
+                for token in &self.tokens {
+                    rewritten = rewritten.replace(token, replacement);
+                }
+                
+                Decision::Rewrite {
+                    replacement: rewritten,
+                }
+            } else {
+                // Block on match (engine will handle scoring vs blocking logic)
+                Decision::Block {
+                    reason: self.reason.clone(),
+                }
             }
         } else {
+            // No match - reset score
+            self.last_decision_score = 0;
             Decision::Allow
         }
     }
@@ -242,10 +309,15 @@ impl Rule for ForbiddenSequenceRule {
     fn reset(&mut self) {
         self.state = 0;
         self.buffer.clear();
+        self.last_decision_score = 0;
     }
 
     fn name(&self) -> &str {
         "forbidden_sequence"
+    }
+
+    fn last_score(&self) -> u32 {
+        self.last_decision_score
     }
 }
 

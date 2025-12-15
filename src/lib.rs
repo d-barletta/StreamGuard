@@ -38,5 +38,5 @@ mod engine;
 pub mod rules;
 
 // Re-export core types
-pub use crate::core::{Decision, Rule};
+pub use crate::core::{Decision, Rule, ScoredDecision};
 pub use crate::engine::GuardEngine;
