@@ -47,7 +47,7 @@ cargo test -- --nocapture
 ## Development Workflow
 
 1. **Add a new rule**: Create a new file in `src/rules/`
-2. **Implement the `Rule` trait**: See `sequence.rs` for reference
+2. **Implement the `Rule` trait**: See `sequence.rs` or `pattern.rs` for reference
 3. **Add unit tests**: Test chunk boundaries and state management
 4. **Add integration tests**: Test with `GuardEngine`
 

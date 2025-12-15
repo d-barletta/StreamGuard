@@ -178,16 +178,6 @@ impl GuardEngine {
             return block_decision;
         }
 
-        // Check if score threshold is exceeded
-        if let Some(threshold) = self.score_threshold {
-            if self.current_score >= threshold {
-                self.stopped = true;
-                return Decision::Block {
-                    reason: format!("score threshold exceeded: {} >= {}", self.current_score, threshold),
-                };
-            }
-        }
-
         // Return chained rewrite if any rewrites occurred
         if has_rewrite {
             Decision::Rewrite { replacement: text }
