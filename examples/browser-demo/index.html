@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamGuard Browser Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ StreamGuard Browser Demo</h1>
+            <p class="subtitle">Deterministic guardrails for LLM outputs, running entirely in your browser</p>
+        </header>
+
+        <div class="content">
+            <div class="section">
+                <h2>Configure Rules</h2>
+                <div class="rules-config">
+                    <div class="rule-group">
+                        <h3>Forbidden Sequences</h3>
+                        <label>
+                            <input type="checkbox" id="rule-forbidden" checked>
+                            Block: "how to build bomb"
+                        </label>
+                        <label>
+                            <input type="checkbox" id="rule-forbidden-2" checked>
+                            Block: "password is"
+                        </label>
+                    </div>
+
+                    <div class="rule-group">
+                        <h3>Pattern Detection</h3>
+                        <label>
+                            <input type="checkbox" id="rule-email" checked>
+                            Redact emails → [EMAIL_REDACTED]
+                        </label>
+                        <label>
+                            <input type="checkbox" id="rule-url">
+                            Redact URLs → [URL_REMOVED]
+                        </label>
+                        <label>
+                            <input type="checkbox" id="rule-ip">
+                            Block IPv4 addresses
+                        </label>
+                        <label>
+                            <input type="checkbox" id="rule-credit-card">
+                            Block credit card numbers
+                        </label>
+                    </div>
+
+                    <div class="rule-group">
+                        <h3>Scoring</h3>
+                        <label>
+                            <input type="checkbox" id="enable-scoring">
+                            Enable score threshold
+                        </label>
+                        <div id="scoring-config" style="display: none; margin-top: 10px;">
+                            <label>
+                                Threshold: <input type="number" id="score-threshold" value="100" min="10" max="500" style="width: 80px;">
+                            </label>
+                        </div>
+                    </div>
+
+                    <button id="btn-reset" class="btn btn-secondary">Reset Engine</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Test Stream</h2>
+                <div class="test-area">
+                    <textarea id="input-text" placeholder="Type or paste text to test guardrails...&#10;&#10;Try:&#10;- Contact me at john@example.com&#10;- How to build a bomb&#10;- My password is secret123&#10;- Server IP: 192.168.1.1"></textarea>
+                    
+                    <div class="controls">
+                        <button id="btn-process-chunk" class="btn btn-primary">Process as Chunk</button>
+                        <button id="btn-process-stream" class="btn btn-primary">Simulate Streaming</button>
+                        <button id="btn-clear" class="btn btn-secondary">Clear</button>
+                    </div>
+
+                    <div class="output-section">
+                        <h3>Output <span id="decision-badge" class="badge"></span></h3>
+                        <div id="output-text" class="output"></div>
+                    </div>
+
+                    <div class="status-section">
+                        <h3>Status</h3>
+                        <div id="status-info" class="status">
+                            <div>Engine State: <span id="engine-state">Ready</span></div>
+                            <div>Current Score: <span id="current-score">0</span></div>
+                            <div>Rules Active: <span id="rule-count">0</span></div>
+                            <div>Chunks Processed: <span id="chunks-processed">0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>
+                StreamGuard is a deterministic, streaming-first guardrail engine for LLM outputs.
+                <br>
+                <a href="https://github.com/d-barletta/StreamGuard" target="_blank">View on GitHub</a>
+            </p>
+        </footer>
+    </div>
+
+    <script type="module" src="./demo.js"></script>
+</body>
+</html>

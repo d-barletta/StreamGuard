@@ -1,0 +1,19 @@
+{
+  "name": "streamguard-browser-demo",
+  "version": "0.1.0",
+  "description": "Browser demo for StreamGuard guardrail engine",
+  "scripts": {
+    "build:wasm": "cd ../.. && wasm-pack build --target web --out-dir examples/browser-demo/pkg",
+    "serve": "python3 -m http.server 8080",
+    "dev": "npm run build:wasm && npm run serve"
+  },
+  "keywords": [
+    "streamguard",
+    "guardrails",
+    "wasm",
+    "llm",
+    "security"
+  ],
+  "author": "d-barletta",
+  "license": "Apache-2.0"
+}

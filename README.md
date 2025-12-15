@@ -135,6 +135,29 @@ Done inline, without stopping the stream.
 
 ---
 
+## 🌐 Try it in Your Browser!
+
+StreamGuard runs entirely in your browser via WebAssembly! 
+
+Check out the **[interactive browser demo](examples/browser-demo/)** to see guardrails in action:
+- Real-time text filtering
+- Pattern detection and redaction
+- Streaming simulation
+- Zero backend required
+
+To run the demo locally:
+```bash
+# Build WASM module
+wasm-pack build --target web --out-dir examples/browser-demo/pkg
+
+# Serve the demo
+cd examples/browser-demo && python3 -m http.server 8080
+```
+
+Then open http://localhost:8080 in your browser.
+
+---
+
 ## Quick Start
 
 ```rust

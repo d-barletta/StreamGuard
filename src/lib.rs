@@ -57,6 +57,10 @@ mod core;
 mod engine;
 pub mod rules;
 
+// WASM bindings for browser usage
+#[cfg(target_arch = "wasm32")]
+pub mod wasm;
+
 // Re-export core types
 pub use crate::core::{Decision, Rule, ScoredDecision};
 pub use crate::engine::GuardEngine;
