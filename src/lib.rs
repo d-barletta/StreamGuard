@@ -61,6 +61,10 @@ pub mod rules;
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
 
+// Python bindings for native Python extension
+#[cfg(feature = "python")]
+mod python;
+
 // Re-export core types
 pub use crate::core::{Decision, Rule, ScoredDecision};
 pub use crate::engine::GuardEngine;

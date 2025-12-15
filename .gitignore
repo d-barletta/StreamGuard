@@ -23,3 +23,14 @@ examples/browser-demo/pkg/
 
 # Generated Node.js WASM package - rebuild with: wasm-pack build --target nodejs --out-dir examples/node-demo/pkg-node
 examples/node-demo/pkg-node/
+
+# Python build artifacts
+examples/python-demo/pkg-python/
+*.pyc
+__pycache__/
+*.so
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
