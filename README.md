@@ -135,17 +135,19 @@ Done inline, without stopping the stream.
 
 ---
 
-## 🌐 Try it in Your Browser!
+## 🌐 Try it in Your Browser
 
-StreamGuard runs entirely in your browser via WebAssembly! 
+StreamGuard runs entirely in your browser via WebAssembly
 
 Check out the **[interactive browser demo](examples/browser-demo/)** to see guardrails in action:
+
 - Real-time text filtering
 - Pattern detection and redaction
 - Streaming simulation
 - Zero backend required
 
 To run the demo locally:
+
 ```bash
 # Build WASM module
 wasm-pack build --target web --out-dir examples/browser-demo/pkg
@@ -154,7 +156,7 @@ wasm-pack build --target web --out-dir examples/browser-demo/pkg
 cd examples/browser-demo && python3 -m http.server 8080
 ```
 
-Then open http://localhost:8080 in your browser.
+Then open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ---
 
@@ -196,6 +198,52 @@ fn main() {
 ```
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for more examples.
+
+---
+
+## Examples & Demos
+
+StreamGuard provides ready-to-run examples for multiple platforms:
+
+### 🌐 **Browser Demo** ([examples/browser-demo](examples/browser-demo))
+
+Interactive web interface demonstrating real-time guardrails with WASM.
+
+```bash
+cd examples/browser-demo
+npm install && npm start
+# Open http://localhost:8080
+```
+
+### 📦 **Node.js** ([examples/node-demo](examples/node-demo))
+
+Server-side examples in JavaScript and TypeScript with Express integration patterns.
+
+```bash
+cd examples/node-demo
+npm run dev        # JavaScript
+npm run dev:ts     # TypeScript
+```
+
+### 🐍 **Python** ([examples/python-demo](examples/python-demo))
+
+Native PyO3 bindings with Flask/FastAPI integration examples.
+
+```bash
+cd examples/python-demo
+./build.sh && python demo.py
+```
+
+### ☕ **Java** ([examples/java-demo](examples/java-demo))
+
+JNI bindings with Spring Boot and Servlet integration patterns.
+
+```bash
+cd examples/java-demo
+./build.sh
+```
+
+All examples demonstrate: forbidden sequences, pattern redaction, scoring systems, streaming LLM simulation, and batch processing.
 
 ---
 
@@ -286,23 +334,26 @@ They are **complementary**, not competing.
 - ✅ Rewrite/redaction support
 - ✅ Comprehensive test suite (158 tests)
 - ✅ Zero external dependencies
+- ✅ WASM support (browser + Node.js)
+- ✅ Python bindings (PyO3)
+- ✅ Java bindings (JNI)
+- ✅ Multi-platform demos
 
 **In progress:**
 
-- 🚧 WASM compatibility
 - 🚧 Performance optimizations
 - 🚧 Rule DSL/configuration format
+- 🚧 Additional rule types
 
 ---
 
 ## Roadmap
 
-- ✅ **v0.1**: Core engine + sequence rules + pattern detection
-- ✅ **v0.2**: Scoring + rewrite support
+- ✅ **v0.1**: Core engine + sequence rules + pattern detection + scoring + rewrite
+- ✅ **v0.2**: WASM target + browser demo + language bindings (Python, Java, JS/TS)
 - 🚧 **v0.3**: Additional rule types + performance optimization
-- 📋 **v0.4**: WASM target + browser demo
-- 📋 **v0.5**: Rule DSL and config format
-- 📋 **v0.6**: Language bindings (Python, JS)
+- 📋 **v0.4**: Rule DSL and config format
+- 📋 **v0.5**: Structured output enforcement + advanced matchers
 
 ---
 
