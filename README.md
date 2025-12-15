@@ -6,6 +6,8 @@ StreamGuard is an **open-source guardrail engine written in Rust** that inspects
 
 Unlike LLM-based moderation or post-hoc filtering, StreamGuard works **inline, deterministically, and incrementally**.
 
+![StreamGuard Demo](examples/demo.gif)
+
 ---
 
 ## Example
