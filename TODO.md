@@ -18,10 +18,9 @@ All items must align with core principles: deterministic, streaming-first, O(n),
 
 ### Additional Rule Types
 
-- [ ] Repetition detection (e.g., repeated phrases within N tokens)
 - [ ] Character-class constraints (e.g., max consecutive uppercase)
 - [ ] Token frequency limits (e.g., "password" appears max 2x)
-- [ ] Length-based rules (min/max output length)
+- [ ] JSON validity check
 
 ---
 
