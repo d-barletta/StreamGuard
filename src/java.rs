@@ -3,61 +3,46 @@
 //! Provides native JNI interface for zero-copy performance from Java
 
 use jni::JNIEnv;
-use jni::objects::{JClass, JObject, JString, JValue};
+use jni::objects::{JClass, JObject, JString};
 use jni::sys::{jlong, jint, jobject, jboolean};
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-use crate::core::{Decision, Rule};
+use crate::core::Decision;
 use crate::engine::GuardEngine;
 use crate::rules::sequence::ForbiddenSequenceRule;
 use crate::rules::pattern::PatternRule;
 
 // Convert Rust Decision to Java Decision object
-fn decision_to_jobject<'a>(env: &'a JNIEnv, decision: &Decision) -> jobject {
-    let class = env.find_class("com/streamguard/Decision").unwrap();
+fn decision_to_jobject<'a>(env: &'a mut JNIEnv, decision: &Decision) -> jobject {
+    let class_name = "com/streamguard/Decision";
     
     match decision {
         Decision::Allow => {
-            let method = env.get_static_method_id(
-                class,
+            env.call_static_method(
+                class_name,
                 "allow",
-                "()Lcom/streamguard/Decision;"
-            ).unwrap();
-            env.call_static_method_unchecked(
-                class,
-                method,
-                jni::signature::JavaType::Object("com/streamguard/Decision".to_string()),
+                "()Lcom/streamguard/Decision;",
                 &[]
             ).unwrap().l().unwrap().into_raw()
         }
         Decision::Block { reason } => {
-            let reason_str = env.new_string(reason).unwrap();
-            let method = env.get_static_method_id(
-                class,
+            let reason_obj = env.new_string(reason).unwrap();
+            env.call_static_method(
+                class_name,
                 "block",
-                "(Ljava/lang/String;)Lcom/streamguard/Decision;"
-            ).unwrap();
-            env.call_static_method_unchecked(
-                class,
-                method,
-                jni::signature::JavaType::Object("com/streamguard/Decision".to_string()),
-                &[JValue::Object(&JObject::from(reason_str))]
+                "(Ljava/lang/String;)Lcom/streamguard/Decision;",
+                &[(&reason_obj).into()]
             ).unwrap().l().unwrap().into_raw()
         }
         Decision::Rewrite { replacement } => {
-            let text_str = env.new_string(replacement).unwrap();
-            let method = env.get_static_method_id(
-                class,
+            let text_obj = env.new_string(replacement).unwrap();
+            env.call_static_method(
+                class_name,
                 "rewrite",
-                "(Ljava/lang/String;)Lcom/streamguard/Decision;"
-            ).unwrap();
-            env.call_static_method_unchecked(
-                class,
-                method,
-                jni::signature::JavaType::Object("com/streamguard/Decision".to_string()),
-                &[JValue::Object(&JObject::from(text_str))]
+                "(Ljava/lang/String;)Lcom/streamguard/Decision;",
+                &[(&text_obj).into()]
             ).unwrap().l().unwrap().into_raw()
         }
     }
@@ -85,15 +70,15 @@ pub extern "system" fn Java_com_streamguard_GuardEngine_nativeNewWithThreshold(
 
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_GuardEngine_nativeFeed(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _obj: JObject,
     handle: jlong,
     chunk: JString,
 ) -> jobject {
     let engine = unsafe { &mut *(handle as *mut GuardEngine) };
-    let chunk_str: String = env.get_string(chunk).unwrap().into();
+    let chunk_str: String = env.get_string(&chunk).unwrap().into();
     let decision = engine.feed(&chunk_str);
-    decision_to_jobject(&env, &decision)
+    decision_to_jobject(&mut env, &decision)
 }
 
 #[no_mangle]
@@ -156,164 +141,164 @@ pub extern "system" fn Java_com_streamguard_GuardEngine_nativeDestroy(
 // ForbiddenSequenceRule JNI methods
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_ForbiddenSequenceRule_nativeStrict(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     tokens: JObject,
     reason: JString,
 ) -> jlong {
-    let list = env.get_list(tokens).unwrap();
+    let list = env.get_list(&tokens).unwrap();
     let mut token_vec = Vec::new();
     
-    for i in 0..list.size(&env).unwrap() {
-        let item = list.get(&env, i).unwrap();
-        let s: String = env.get_string(JString::from(item)).unwrap().into();
+    for i in 0..list.size(&mut env).unwrap() {
+        let item = list.get(&mut env, i).unwrap().unwrap();
+        let s: String = env.get_string(&JString::from(item)).unwrap().into();
         token_vec.push(s);
     }
     
-    let reason_str: String = env.get_string(reason).unwrap().into();
-    let rule = Box::new(ForbiddenSequenceRule::strict(token_vec, reason_str));
+    let reason_str: String = env.get_string(&reason).unwrap().into();
+    let rule = Box::new(ForbiddenSequenceRule::strict(token_vec, reason_str.as_str()));
     Box::into_raw(rule) as jlong
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_ForbiddenSequenceRule_nativeWithGaps(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     tokens: JObject,
     reason: JString,
 ) -> jlong {
-    let list = env.get_list(tokens).unwrap();
+    let list = env.get_list(&tokens).unwrap();
     let mut token_vec = Vec::new();
     
-    for i in 0..list.size(&env).unwrap() {
-        let item = list.get(&env, i).unwrap();
-        let s: String = env.get_string(JString::from(item)).unwrap().into();
+    for i in 0..list.size(&mut env).unwrap() {
+        let item = list.get(&mut env, i).unwrap().unwrap();
+        let s: String = env.get_string(&JString::from(item)).unwrap().into();
         token_vec.push(s);
     }
     
-    let reason_str: String = env.get_string(reason).unwrap().into();
-    let rule = Box::new(ForbiddenSequenceRule::with_gaps(token_vec, reason_str));
+    let reason_str: String = env.get_string(&reason).unwrap().into();
+    let rule = Box::new(ForbiddenSequenceRule::with_gaps(token_vec, reason_str.as_str()));
     Box::into_raw(rule) as jlong
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_ForbiddenSequenceRule_nativeWithScore(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     tokens: JObject,
     reason: JString,
     score: jint,
 ) -> jlong {
-    let list = env.get_list(tokens).unwrap();
+    let list = env.get_list(&tokens).unwrap();
     let mut token_vec = Vec::new();
     
-    for i in 0..list.size(&env).unwrap() {
-        let item = list.get(&env, i).unwrap();
-        let s: String = env.get_string(JString::from(item)).unwrap().into();
+    for i in 0..list.size(&mut env).unwrap() {
+        let item = list.get(&mut env, i).unwrap().unwrap();
+        let s: String = env.get_string(&JString::from(item)).unwrap().into();
         token_vec.push(s);
     }
     
-    let reason_str: String = env.get_string(reason).unwrap().into();
-    let rule = Box::new(ForbiddenSequenceRule::new_with_score(token_vec, reason_str, score as u32));
+    let reason_str: String = env.get_string(&reason).unwrap().into();
+    let rule = Box::new(ForbiddenSequenceRule::new_with_score(token_vec, reason_str.as_str(), score as u32));
     Box::into_raw(rule) as jlong
 }
 
 // PatternRule JNI methods
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_PatternRule_nativeEmail(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     reason: JString,
 ) -> jlong {
-    let reason_str: String = env.get_string(reason).unwrap().into();
-    let rule = Box::new(PatternRule::email(reason_str));
+    let reason_str: String = env.get_string(&reason).unwrap().into();
+    let rule = Box::new(PatternRule::email(reason_str.as_str()));
     Box::into_raw(rule) as jlong
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_PatternRule_nativeEmailStrict(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     reason: JString,
 ) -> jlong {
-    let reason_str: String = env.get_string(reason).unwrap().into();
-    let rule = Box::new(PatternRule::email_strict(reason_str));
+    let reason_str: String = env.get_string(&reason).unwrap().into();
+    let rule = Box::new(PatternRule::email_strict(reason_str.as_str()));
     Box::into_raw(rule) as jlong
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_PatternRule_nativeEmailRewrite(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     replacement: JString,
 ) -> jlong {
-    let replacement_str: String = env.get_string(replacement).unwrap().into();
-    let rule = Box::new(PatternRule::email_rewrite(replacement_str));
+    let replacement_str: String = env.get_string(&replacement).unwrap().into();
+    let rule = Box::new(PatternRule::email_rewrite(replacement_str.as_str()));
     Box::into_raw(rule) as jlong
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_PatternRule_nativeUrl(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     reason: JString,
 ) -> jlong {
-    let reason_str: String = env.get_string(reason).unwrap().into();
-    let rule = Box::new(PatternRule::url(reason_str));
+    let reason_str: String = env.get_string(&reason).unwrap().into();
+    let rule = Box::new(PatternRule::url(reason_str.as_str()));
     Box::into_raw(rule) as jlong
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_PatternRule_nativeUrlRewrite(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     replacement: JString,
 ) -> jlong {
-    let replacement_str: String = env.get_string(replacement).unwrap().into();
-    let rule = Box::new(PatternRule::url_rewrite(replacement_str));
+    let replacement_str: String = env.get_string(&replacement).unwrap().into();
+    let rule = Box::new(PatternRule::url_rewrite(replacement_str.as_str()));
     Box::into_raw(rule) as jlong
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_PatternRule_nativeIpv4(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     reason: JString,
 ) -> jlong {
-    let reason_str: String = env.get_string(reason).unwrap().into();
-    let rule = Box::new(PatternRule::ipv4(reason_str));
+    let reason_str: String = env.get_string(&reason).unwrap().into();
+    let rule = Box::new(PatternRule::ipv4(reason_str.as_str()));
     Box::into_raw(rule) as jlong
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_PatternRule_nativeIpv4Rewrite(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     replacement: JString,
 ) -> jlong {
-    let replacement_str: String = env.get_string(replacement).unwrap().into();
-    let rule = Box::new(PatternRule::ipv4_rewrite(replacement_str));
+    let replacement_str: String = env.get_string(&replacement).unwrap().into();
+    let rule = Box::new(PatternRule::ipv4_rewrite(replacement_str.as_str()));
     Box::into_raw(rule) as jlong
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_PatternRule_nativeCreditCard(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     reason: JString,
 ) -> jlong {
-    let reason_str: String = env.get_string(reason).unwrap().into();
-    let rule = Box::new(PatternRule::credit_card(reason_str));
+    let reason_str: String = env.get_string(&reason).unwrap().into();
+    let rule = Box::new(PatternRule::credit_card(reason_str.as_str()));
     Box::into_raw(rule) as jlong
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_streamguard_PatternRule_nativeCreditCardRewrite(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
     replacement: JString,
 ) -> jlong {
-    let replacement_str: String = env.get_string(replacement).unwrap().into();
-    let rule = Box::new(PatternRule::credit_card_rewrite(replacement_str));
+    let replacement_str: String = env.get_string(&replacement).unwrap().into();
+    let rule = Box::new(PatternRule::credit_card_rewrite(replacement_str.as_str()));
     Box::into_raw(rule) as jlong
 }
