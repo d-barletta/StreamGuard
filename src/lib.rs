@@ -65,6 +65,10 @@ pub mod wasm;
 #[cfg(feature = "python")]
 mod python;
 
+// Java JNI bindings for native Java integration
+#[cfg(feature = "java")]
+mod java;
+
 // Re-export core types
 pub use crate::core::{Decision, Rule, ScoredDecision};
 pub use crate::engine::GuardEngine;

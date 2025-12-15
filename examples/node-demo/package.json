@@ -5,8 +5,11 @@
   "main": "index.js",
   "scripts": {
     "build": "cd ../.. && wasm-pack build --target nodejs --out-dir examples/node-demo/pkg-node",
+    "build:ts": "tsc",
     "start": "node index.js",
-    "dev": "npm run build && npm start"
+    "start:ts": "cd dist && node demo.js",
+    "dev": "npm run build && npm start",
+    "dev:ts": "npm run build && npm run build:ts && npm run start:ts"
   },
   "keywords": [
     "streamguard",
@@ -16,6 +19,10 @@
   ],
   "author": "d-barletta",
   "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
   "engines": {
     "node": ">=14.0.0"
   }

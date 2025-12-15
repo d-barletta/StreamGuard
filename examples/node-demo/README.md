@@ -2,36 +2,43 @@
 
 Server-side examples demonstrating how to use StreamGuard in a Node.js environment.
 
+Available in both JavaScript and TypeScript.
+
 ## Quick Start
 
-### Build the Node.js Package
-
-From the project root:
+### JavaScript
 
 ```bash
+cd examples/node-demo
+npm run dev
+```
+
+### TypeScript
+
+```bash
+cd examples/node-demo
+npm install
+npm run dev:ts
+```
+
+Or build and run separately:
+
+```bash
+# Build WASM module (from project root)
 wasm-pack build --target nodejs --out-dir examples/node-demo/pkg-node
-```
 
-Or from this directory:
-
-```bash
-npm run build
-```
-
-### Run the Examples
-
-```bash
-cd examples/node
+# JavaScript
+cd examples/node-demo
 node index.js
-```
 
-Or use the npm script:
-
-```bash
-npm start
+# TypeScript
+npm run build:ts
+node dist/demo.js
 ```
 
 ## Examples Included
+
+Both JavaScript (`index.js`) and TypeScript (`demo.ts`) versions available:
 
 ### 1. Basic Forbidden Sequence Detection
 Shows how to block specific word sequences like "how to build bomb".
@@ -46,18 +53,30 @@ Shows cumulative risk scoring with thresholds for nuanced content moderation.
 Simulates processing streaming LLM output with real-time guardrails.
 
 ### 5. Express Middleware Pattern
-Template for integrating StreamGuard into Express.js applications.
+Template for integrating StreamGuard into Express.js applications (with TypeScript types).
 
 ### 6. Batch Processing
-Example of processing multiple documents efficiently.
+Example of processing multiple documents efficiently with type safety.
+
+### 7. Async Generator Pattern (TypeScript)
+Type-safe async generator for streaming applications.
 
 ## Integration Patterns
 
+### TypeScript Configuration
+
+The demo includes complete TypeScript support with:
+- Strict type checking enabled
+- ES2020 target for modern Node.js
+- Source maps for debugging
+- Type-safe interfaces for all operations
+
 ### Express.js Server
 
+**JavaScript:**
 ```javascript
 const express = require('express');
-const { GuardEngine, PatternRule } = require('../../pkg-node/streamguard.js');
+const { GuardEngine, PatternRule } = require('./pkg-node/streamguard.js');
 
 const app = express();
 app.use(express.json());
@@ -87,11 +106,45 @@ app.post('/api/complete', (req, res) => {
 app.listen(3000);
 ```
 
+**TypeScript:**
+```typescript
+import express, { Request, Response } from 'express';
+import { GuardEngine, PatternRule } from './pkg-node/streamguard';
+
+const app = express();
+app.use(express.json());
+
+const engine = new GuardEngine();
+engine.add_rule(PatternRule.email_rewrite('[EMAIL]'));
+
+interface CheckRequest {
+  prompt: string;
+}
+
+app.post('/api/complete', (req: Request<{}, {}, CheckRequest>, res: Response) => {
+    const { prompt } = req.body;
+    
+    engine.reset();
+    const decision = engine.feed(prompt);
+    
+    if (decision.is_block()) {
+        return res.status(400).json({
+            error: 'Content blocked',
+            reason: decision.reason
+        });
+    }
+    
+    res.json({ result: 'success' });
+});
+
+app.listen(3000);
+```
+
 ### Stream Processing
 
 ```javascript
 const { Transform } = require('stream');
-const { GuardEngine } = require('../../pkg-node/streamguard.js');
+const { GuardEngine } = require('./pkg-node/streamguard.js');
 
 class GuardTransform extends Transform {
     constructor(engine) {
