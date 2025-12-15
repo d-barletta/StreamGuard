@@ -63,6 +63,20 @@ Key principles:
 - Constant memory per rule
 - No ML, no backtracking, no randomness
 
+## DFA Implementation
+
+The forbidden sequence rule uses the [aho-corasick](https://docs.rs/aho-corasick/) library for efficient
+multi-pattern matching. This provides:
+
+- **O(n + m) time complexity**: Linear in text length (n) and pattern length (m)
+- **DFA-based matching**: True deterministic finite automaton implementation
+- **Memory efficiency**: Compact state machine representation
+- **Unicode support**: Handles international characters correctly
+- **Streaming optimized**: Designed for incremental text processing
+
+The aho-corasick algorithm is well-suited for security applications as it provides
+predictable performance and deterministic behavior.
+
 ## Example Usage
 
 ```rust

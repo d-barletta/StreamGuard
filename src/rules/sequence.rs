@@ -3,8 +3,29 @@
 //! This rule detects forbidden token sequences in a streaming manner,
 //! handling partial matches across chunk boundaries.
 //!
-//! This implementation uses the aho-corasick library for efficient
-//! multi-pattern matching with DFA-based automaton.
+//! # Implementation Details
+//!
+//! This implementation uses the [aho-corasick](https://docs.rs/aho-corasick/) library for efficient
+//! multi-pattern matching with DFA-based automaton. The aho-corasick algorithm provides:
+//!
+//! - **O(n + m)** time complexity where n is text length and m is pattern length
+//! - **Linear memory usage** independent of the number of patterns
+//! - **Deterministic matching** using the LeftmostFirst strategy
+//! - **Efficient handling** of multiple patterns simultaneously
+//! - **Unicode support** for international text
+//!
+//! ## Benefits of aho-corasick
+//!
+//! 1. **Performance**: Significantly faster than naive string matching for multiple patterns
+//! 2. **Memory efficiency**: Compact DFA representation with minimal overhead
+//! 3. **Streaming-friendly**: Designed for incremental text processing
+//! 4. **Battle-tested**: Widely used in security and text processing applications
+//! 5. **Deterministic**: Same input always produces the same output
+//!
+//! ## Pattern Matching Strategy
+//!
+//! The implementation uses `MatchKind::LeftmostFirst` to ensure deterministic behavior
+//! when multiple patterns overlap. This guarantees predictable results across all platforms.
 
 use alloc::format;
 use alloc::string::{String, ToString};
