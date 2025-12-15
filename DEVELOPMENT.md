@@ -90,14 +90,31 @@ fn main() {
 }
 ```
 
-## WASM Support (Future)
+## WASM Support
 
-To build for WASM:
+StreamGuard is `no_std` compatible and ready for WASM!
+
+### Building for WASM
 
 ```bash
 rustup target add wasm32-unknown-unknown
-cargo build --target wasm32-unknown-unknown --release
+cargo build --target wasm32-unknown-unknown --release --no-default-features
 ```
+
+### Using in no_std Environments
+
+The crate can be used without the standard library:
+
+```toml
+[dependencies]
+streamguard = { version = "0.1", default-features = false }
+```
+
+Note: In `no_std` environments, your application must provide:
+- A global allocator (`#[global_allocator]`)
+- A panic handler (`#[panic_handler]`)
+
+The crate uses `alloc` for heap allocations (String, Vec, Box).
 
 ## Documentation
 

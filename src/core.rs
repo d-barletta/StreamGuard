@@ -1,5 +1,8 @@
 //! Core types and traits for StreamGuard
 
+use alloc::string::String;
+use alloc::vec::Vec;
+
 /// Decision returned by a rule or the engine
 ///
 /// Decisions are final and immediate - they determine what happens

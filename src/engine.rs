@@ -1,5 +1,10 @@
 //! The main GuardEngine that orchestrates rules and decisions
 
+use alloc::boxed::Box;
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+
 use crate::core::{Decision, Rule};
 
 /// Engine mode for handling rewrites

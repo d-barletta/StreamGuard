@@ -12,6 +12,10 @@ categories = ["text-processing", "parsing"]
 [lib]
 crate-type = ["lib", "cdylib"]
 
+[features]
+default = ["std"]
+std = []
+
 [dependencies]
 # Keep dependencies minimal - core engine should be dependency-free
 

@@ -3,6 +3,10 @@
 //! This rule detects forbidden token sequences in a streaming manner,
 //! handling partial matches across chunk boundaries.
 
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+
 use crate::core::{Decision, Rule};
 
 /// Configuration for sequence matching behavior

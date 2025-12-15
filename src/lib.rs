@@ -13,6 +13,22 @@
 //! - **O(n) processing**: Linear time complexity with constant memory per rule
 //! - **No backtracking**: Rules advance their state forward only
 //!
+//! # no_std Support
+//!
+//! This crate is `no_std` compatible when compiled without the default `std` feature.
+//! The `alloc` crate is required for heap allocations (String, Vec, Box).
+//!
+//! When using in a `no_std` environment, the application must provide:
+//! - A global allocator via `#[global_allocator]`
+//! - A panic handler via `#[panic_handler]`
+//!
+//! ## Example no_std usage
+//!
+//! ```toml
+//! [dependencies]
+//! streamguard = { version = "0.1", default-features = false }
+//! ```
+//!
 //! # Example Usage
 //!
 //! ```rust
@@ -30,8 +46,12 @@
 //! }
 //! ```
 
+#![cfg_attr(not(feature = "std"), no_std)]
 #![warn(missing_docs)]
 #![warn(clippy::all)]
+
+// Use alloc for heap allocations in no_std mode
+extern crate alloc;
 
 mod core;
 mod engine;

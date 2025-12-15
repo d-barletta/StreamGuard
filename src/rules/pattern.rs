@@ -23,6 +23,9 @@
 //! A full DFA-based regex engine could be added as an optional feature
 //! (see TODO.md), but the current implementation satisfies the core requirements.
 
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+
 use crate::core::{Decision, Rule};
 
 /// Preset pattern types for common use cases

@@ -10,7 +10,7 @@ All items must align with core principles: deterministic, streaming-first, O(n),
 
 ### WASM Support
 
-- [ ] Make core engine `no_std`-friendly
+- [x] Make core engine `no_std`-friendly
 - [ ] Remove OS-specific API dependencies
 - [ ] Add WASM build target
 - [ ] Create browser-based demo
