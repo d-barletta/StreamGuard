@@ -135,6 +135,47 @@ Done inline, without stopping the stream.
 
 ---
 
+## Quick Start
+
+```rust
+use streamguard::{GuardEngine, rules::ForbiddenSequenceRule};
+
+fn main() {
+    let mut engine = GuardEngine::new();
+    
+    // Block forbidden sequences
+    engine.add_rule(Box::new(
+        ForbiddenSequenceRule::with_gaps(
+            vec!["how", "to", "build", "bomb"],
+            "forbidden instructions"
+        )
+    ));
+    
+    // Redact emails
+    engine.add_rule(Box::new(
+        streamguard::rules::PatternRule::email_rewrite("[EMAIL_REDACTED]")
+    ));
+    
+    // Process stream
+    for chunk in vec!["Contact: ", "user@exam", "ple.com"] {
+        match engine.feed(chunk) {
+            streamguard::Decision::Allow => continue,
+            streamguard::Decision::Block { reason } => {
+                println!("Blocked: {}", reason);
+                break;
+            }
+            streamguard::Decision::Rewrite { replacement } => {
+                println!("Rewritten: {}", replacement);
+            }
+        }
+    }
+}
+```
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for more examples.
+
+---
+
 ## Decision Model
 
 ```rust
@@ -149,14 +190,22 @@ Decisions are final and immediate.
 
 ---
 
-## Rule Types (Planned)
+## Rule Types
 
-- Forbidden sequences (DFA / Aho–Corasick)
-- Regex-based patterns (compiled to DFA)
+### Implemented ✅
+
+- **Forbidden sequences**: DFA-like state machine with configurable gap handling and stop words
+- **Pattern detection**: Hand-coded matchers for emails, URLs, IPv4 addresses, credit cards
+- **Risk scoring**: Cumulative scoring with configurable thresholds and decay
+- **Rewrite/redaction**: Inline content replacement for both sequences and patterns
+
+### Planned 📋
+
 - Structured output enforcement (JSON / XML / Markdown)
-- Risk scoring with thresholds
-- Contextual exceptions
-- Token rewrite / redaction
+- Character-class constraints (e.g., max consecutive uppercase)
+- Token frequency limits
+- Full DFA regex engine (optional)
+- Rule composition primitives (AND/OR/NOT)
 
 ---
 
@@ -203,24 +252,34 @@ They are **complementary**, not competing.
 
 ## Status
 
-🚧 **Early development / design phase**
+✅ **v0.1 Alpha** - Core features implemented
 
-The initial focus is:
+**Working now:**
 
-- core streaming engine
-- minimal rule DSL
-- forbidden sequence detection
-- WASM compatibility
+- ✅ Core streaming engine (`GuardEngine`)
+- ✅ Forbidden sequence detection (with gaps, stop words, strict mode)
+- ✅ Pattern detection (email, URL, IPv4, credit card)
+- ✅ Risk scoring with thresholds and decay
+- ✅ Rewrite/redaction support
+- ✅ Comprehensive test suite (158 tests)
+- ✅ Zero external dependencies
+
+**In progress:**
+
+- 🚧 WASM compatibility
+- 🚧 Performance optimizations
+- 🚧 Rule DSL/configuration format
 
 ---
 
-## Roadmap (High-Level)
+## Roadmap
 
-- v0.1: Core engine + sequence rules
-- v0.2: Scoring + rewrite
-- v0.3: JSON enforcement
-- v0.4: WASM target
-- v0.5: Rule DSL and config
+- ✅ **v0.1**: Core engine + sequence rules + pattern detection
+- ✅ **v0.2**: Scoring + rewrite support
+- 🚧 **v0.3**: Additional rule types + performance optimization
+- 📋 **v0.4**: WASM target + browser demo
+- 📋 **v0.5**: Rule DSL and config format
+- 📋 **v0.6**: Language bindings (Python, JS)
 
 ---
 
