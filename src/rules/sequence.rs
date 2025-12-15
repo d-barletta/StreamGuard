@@ -157,15 +157,23 @@ impl ForbiddenSequenceRule {
     /// * `tokens` - The sequence of tokens that trigger blocking
     /// * `reason` - Human-readable reason for blocking
     /// * `config` - Configuration for matching behavior
+    ///
+    /// # Panics
+    ///
+    /// Panics if `tokens` is empty. Use at least one token to create a valid rule.
     pub fn new<S: AsRef<str>>(tokens: Vec<S>, reason: &str, config: SequenceConfig) -> Self {
         let tokens_owned: Vec<String> = tokens.iter().map(|s| s.as_ref().to_string()).collect();
         
+        // Validate that we have at least one token
+        assert!(!tokens_owned.is_empty(), "ForbiddenSequenceRule requires at least one token");
+        
         // Build Aho-Corasick automaton for the tokens
         // Use MatchKind::LeftmostFirst for deterministic matching
+        // This cannot fail since we validated tokens are non-empty
         let ac = AhoCorasickBuilder::new()
             .match_kind(MatchKind::LeftmostFirst)
             .build(&tokens_owned)
-            .expect("Failed to build Aho-Corasick automaton");
+            .expect("Failed to build Aho-Corasick automaton (this should never happen)");
         
         // Build Aho-Corasick automaton for stop words if any
         let stop_words_ac = if !config.stop_words.is_empty() {
@@ -173,7 +181,7 @@ impl ForbiddenSequenceRule {
                 AhoCorasickBuilder::new()
                     .match_kind(MatchKind::LeftmostFirst)
                     .build(&config.stop_words)
-                    .expect("Failed to build stop words automaton")
+                    .expect("Failed to build stop words automaton (this should never happen)")
             )
         } else {
             None
@@ -204,12 +212,18 @@ impl ForbiddenSequenceRule {
     }
 
     /// Create a rule with scoring
+    ///
+    /// # Panics
+    ///
+    /// Panics if `tokens` is empty. Use at least one token to create a valid rule.
     pub fn new_with_score<S: AsRef<str>>(tokens: Vec<S>, reason: &str, score: u32) -> Self {
         let tokens_owned: Vec<String> = tokens.iter().map(|s| s.as_ref().to_string()).collect();
+        assert!(!tokens_owned.is_empty(), "ForbiddenSequenceRule requires at least one token");
+        
         let ac = AhoCorasickBuilder::new()
             .match_kind(MatchKind::LeftmostFirst)
             .build(&tokens_owned)
-            .expect("Failed to build Aho-Corasick automaton");
+            .expect("Failed to build Aho-Corasick automaton (this should never happen)");
         
         Self {
             tokens: tokens_owned,
@@ -226,12 +240,18 @@ impl ForbiddenSequenceRule {
     }
 
     /// Create a rule with rewrite support
+    ///
+    /// # Panics
+    ///
+    /// Panics if `tokens` is empty. Use at least one token to create a valid rule.
     pub fn new_with_rewrite<S: AsRef<str>>(tokens: Vec<S>, replacement: &str) -> Self {
         let tokens_owned: Vec<String> = tokens.iter().map(|s| s.as_ref().to_string()).collect();
+        assert!(!tokens_owned.is_empty(), "ForbiddenSequenceRule requires at least one token");
+        
         let ac = AhoCorasickBuilder::new()
             .match_kind(MatchKind::LeftmostFirst)
             .build(&tokens_owned)
-            .expect("Failed to build Aho-Corasick automaton");
+            .expect("Failed to build Aho-Corasick automaton (this should never happen)");
         
         Self {
             tokens: tokens_owned,
@@ -305,30 +325,34 @@ impl ForbiddenSequenceRule {
             let target = &self.tokens[self.state];
 
             // Use aho-corasick to check if the target token exists in the buffer
-            // Since we may have duplicate tokens, we can't rely on pattern IDs
-            // Instead, we find all matches and look for our specific token
-            let mut found_match = false;
+            // Since we may have duplicate tokens, we can't rely on pattern IDs alone
+            // We need to find the leftmost occurrence of our target token
+            let mut leftmost_match: Option<aho_corasick::Match> = None;
             for mat in self.ac.find_iter(&self.buffer) {
                 let matched_token = &self.tokens[mat.pattern().as_usize()];
                 // Check if this match is for our current target token
                 if matched_token == target {
-                    // Found the token - advance state
-                    self.state += 1;
-
-                    // Clear buffer up to and including the matched token
-                    let after = mat.end();
-                    self.buffer = self.buffer[after..].to_string();
-
-                    // Check if we've matched the entire sequence
-                    if self.state >= self.tokens.len() {
-                        return true;
+                    // Keep track of the leftmost match
+                    if leftmost_match.is_none() || mat.start() < leftmost_match.unwrap().start() {
+                        leftmost_match = Some(mat);
                     }
-                    found_match = true;
-                    break; // Break to continue with next token
+                    break; // LeftmostFirst should give us the first occurrence already
                 }
             }
             
-            if !found_match {
+            if let Some(mat) = leftmost_match {
+                // Found the token - advance state
+                self.state += 1;
+
+                // Clear buffer up to and including the matched token
+                let after = mat.end();
+                self.buffer = self.buffer[after..].to_string();
+
+                // Check if we've matched the entire sequence
+                if self.state >= self.tokens.len() {
+                    return true;
+                }
+            } else {
                 // Token not found yet - need more input
                 break;
             }
