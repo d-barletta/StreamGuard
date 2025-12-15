@@ -115,7 +115,7 @@ async function processStream() {
         let wasRewritten = false;
         
         // Process in small chunks (simulating streaming)
-        const chunkSize = 5; // characters per chunk
+        const chunkSize = 20; // characters per chunk
         for (let i = 0; i < inputText.length; i += chunkSize) {
             const chunk = inputText.substring(i, Math.min(i + chunkSize, inputText.length));
             const decision = engine.feed(chunk);
@@ -140,8 +140,10 @@ async function processStream() {
                 badge.textContent = 'REWRITING...';
                 badge.className = 'badge rewrite';
                 
-                // Engine continues from this point - no reset needed
-                // The rewrite has been applied, continue with next chunks normally
+                // Create new engine with same configuration and feed rewritten content
+                createEngine();
+                engine.feed(accumulatedOutput);
+                chunksProcessed++;
             }
 
             updateStatus();
@@ -153,9 +155,11 @@ async function processStream() {
         if (wasRewritten) {
             badge.textContent = 'REWRITTEN';
             badge.className = 'badge rewrite';
+            outputDiv.className = 'output rewritten';
         } else {
             badge.textContent = 'ALLOWED';
             badge.className = 'badge allow';
+            outputDiv.className = 'output';
         }
     } catch (error) {
         console.error('Streaming error:', error);
@@ -205,10 +209,15 @@ function showError(message) {
 
 // Clear output
 function clearOutput() {
+    const outputDiv = document.getElementById('output-text');
+    const badge = document.getElementById('decision-badge');
+    
     document.getElementById('input-text').value = '';
-    document.getElementById('output-text').textContent = '';
-    document.getElementById('decision-badge').textContent = '';
-    document.getElementById('decision-badge').className = 'badge';
+    outputDiv.textContent = '';
+    outputDiv.className = 'output';
+    badge.textContent = '';
+    badge.className = 'badge';
+    
     if (engine) {
         engine.reset();
         chunksProcessed = 0;
@@ -218,9 +227,14 @@ function clearOutput() {
 
 // Clear only the output area (not input text)
 function clearOutputOnly() {
-    document.getElementById('output-text').textContent = '';
-    document.getElementById('decision-badge').textContent = '';
-    document.getElementById('decision-badge').className = 'badge';
+    const outputDiv = document.getElementById('output-text');
+    const badge = document.getElementById('decision-badge');
+    
+    outputDiv.textContent = '';
+    outputDiv.className = 'output';
+    badge.textContent = '';
+    badge.className = 'badge';
+    
     if (engine) {
         engine.reset();
         chunksProcessed = 0;
@@ -234,8 +248,20 @@ function resetEngine() {
     clearOutputOnly();
 }
 
+// Load example text
+function loadExample() {
+    const exampleText = `Hello! I'm an AI assistant. For support, contact us at admin@example.com or visit our site at https://help.example.com.
+
+Important: Never share sensitive data. For instance, if someone asks "how to build a bomb" or your "password is secret123", that's a security red flag.
+
+We can help with legitimate questions about technology, learning, and problem-solving. Our team is available 24/7!`;
+    document.getElementById('input-text').value = exampleText;
+    clearOutputOnly();
+}
+
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('btn-load-example').addEventListener('click', loadExample);
     document.getElementById('btn-process-chunk').addEventListener('click', processChunk);
     document.getElementById('btn-process-stream').addEventListener('click', processStream);
     document.getElementById('btn-clear').addEventListener('click', clearOutput);
