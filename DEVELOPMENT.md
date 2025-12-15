@@ -1,0 +1,112 @@
+# StreamGuard Development Setup
+
+## Prerequisites
+
+Install Rust via rustup:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+## Project Structure
+
+```bash
+StreamGuard/
+├── Cargo.toml              # Rust package manifest
+├── src/
+│   ├── lib.rs              # Library entry point
+│   ├── core.rs             # Core types (Decision, Rule trait)
+│   ├── engine.rs           # GuardEngine orchestrator
+│   └── rules/
+│       ├── mod.rs          # Rules module
+│       └── sequence.rs     # ForbiddenSequenceRule implementation
+├── tests/
+│   └── integration_tests.rs # Integration tests
+└── .github/
+    └── copilot-instructions.md # AI agent development guide
+```
+
+## Building
+
+```bash
+cargo build
+```
+
+## Running Tests
+
+```bash
+cargo test
+```
+
+Run tests with output:
+
+```bash
+cargo test -- --nocapture
+```
+
+## Development Workflow
+
+1. **Add a new rule**: Create a new file in `src/rules/`
+2. **Implement the `Rule` trait**: See `sequence.rs` for reference
+3. **Add unit tests**: Test chunk boundaries and state management
+4. **Add integration tests**: Test with `GuardEngine`
+
+## Design Principles
+
+See [.github/copilot-instructions.md](.github/copilot-instructions.md) for detailed development guidelines.
+
+Key principles:
+
+- Streaming-first (no buffering)
+- Deterministic (same input → same output)
+- O(n) processing
+- Constant memory per rule
+- No ML, no backtracking, no randomness
+
+## Example Usage
+
+```rust
+use streamguard::{GuardEngine, rules::ForbiddenSequenceRule};
+
+fn main() {
+    let mut engine = GuardEngine::new();
+    
+    // Add a rule
+    engine.add_rule(Box::new(ForbiddenSequenceRule::new(
+        vec!["forbidden", "sequence"],
+        "contains forbidden content",
+    )));
+    
+    // Process stream
+    let chunks = vec!["this is ", "forbidden ", "sequence"];
+    
+    for chunk in chunks {
+        let decision = engine.feed(chunk);
+        if decision.is_block() {
+            println!("Blocked!");
+            break;
+        }
+    }
+}
+```
+
+## WASM Support (Future)
+
+To build for WASM:
+
+```bash
+rustup target add wasm32-unknown-unknown
+cargo build --target wasm32-unknown-unknown --release
+```
+
+## Documentation
+
+Generate and view documentation:
+
+```bash
+cargo doc --open
+```
+
+## License
+
+Apache-2.0

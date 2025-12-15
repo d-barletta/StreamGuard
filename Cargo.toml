@@ -1,0 +1,34 @@
+[package]
+name = "streamguard"
+version = "0.1.0"
+edition = "2021"
+authors = ["d-barletta"]
+license = "Apache-2.0"
+description = "A deterministic, streaming-first guardrail engine for LLM outputs"
+repository = "https://github.com/d-barletta/StreamGuard"
+keywords = ["llm", "guardrails", "streaming", "security", "safety"]
+categories = ["text-processing", "parsing"]
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+# Keep dependencies minimal - core engine should be dependency-free
+
+[dev-dependencies]
+# For testing only
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.dev]
+opt-level = 0
+
+# WASM target support
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
