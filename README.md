@@ -1,4 +1,4 @@
-# StreamGuard
+# 🛡️ StreamGuard ⚔️
 
 A deterministic, streaming-first guardrail engine for LLM outputs, inspired by network intrusion detection systems like Suricata and Snort.
 
