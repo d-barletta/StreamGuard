@@ -216,10 +216,22 @@ function clearOutput() {
     }
 }
 
+// Clear only the output area (not input text)
+function clearOutputOnly() {
+    document.getElementById('output-text').textContent = '';
+    document.getElementById('decision-badge').textContent = '';
+    document.getElementById('decision-badge').className = 'badge';
+    if (engine) {
+        engine.reset();
+        chunksProcessed = 0;
+        updateStatus();
+    }
+}
+
 // Reset engine with new configuration
 function resetEngine() {
     createEngine();
-    clearOutput();
+    clearOutputOnly();
 }
 
 // Event listeners
