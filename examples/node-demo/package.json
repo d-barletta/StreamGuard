@@ -1,0 +1,22 @@
+{
+  "name": "streamguard-node-example",
+  "version": "0.1.0",
+  "description": "Node.js examples for StreamGuard guardrail engine",
+  "main": "index.js",
+  "scripts": {
+    "build": "cd ../.. && wasm-pack build --target nodejs --out-dir examples/node-demo/pkg-node",
+    "start": "node index.js",
+    "dev": "npm run build && npm start"
+  },
+  "keywords": [
+    "streamguard",
+    "guardrails",
+    "llm",
+    "security"
+  ],
+  "author": "d-barletta",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
