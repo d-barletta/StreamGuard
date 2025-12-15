@@ -8,6 +8,74 @@ Unlike LLM-based moderation or post-hoc filtering, StreamGuard works **inline, d
 
 ---
 
+## Example
+
+### Forbidden sequence rule
+
+```text
+how → to → build → bomb
+````
+
+Streaming input:
+
+```text
+"how "
+"to bu"
+"ild a"
+" bomb"
+```
+
+The stream is **stopped immediately** when the sequence completes.
+
+---
+
+### Rewrite rule
+
+Input:
+
+```text
+Contact me at john@example.com
+```
+
+Output:
+
+```text
+Contact me at [REDACTED]
+```
+
+Done inline, without stopping the stream.
+
+---
+
+## 🌐 Try it in Your Browser
+
+StreamGuard runs entirely in your browser via WebAssembly
+
+Check out the **[interactive browser demo](examples/browser-demo/)** to see guardrails in action:
+
+- Real-time text filtering
+- Pattern detection and redaction
+- Streaming simulation
+- Zero backend required
+
+To run the demo locally:
+
+```bash
+# Build WASM module
+wasm-pack build --target web --out-dir examples/browser-demo/pkg
+
+# Go to demo folder
+cd examples/browser-demo
+
+# Run: Node.js (npm install -g http-server)
+npm run serve
+
+```
+
+Then open [http://localhost:8080](http://localhost:8080) in your browser.
+
+---
+
 ## Why StreamGuard?
 
 Modern LLM applications rely on:
@@ -93,76 +161,6 @@ StreamGuard is **enforcement**, not interpretation.
    - rewrite
 
 No full output buffering is required.
-
----
-
-## Example
-
-### Forbidden sequence rule
-
-```text
-how → to → build → bomb
-````
-
-Streaming input:
-
-```text
-"how "
-"to bu"
-"ild a"
-" bomb"
-```
-
-The stream is **stopped immediately** when the sequence completes.
-
----
-
-### Rewrite rule
-
-Input:
-
-```text
-Contact me at john@example.com
-```
-
-Output:
-
-```text
-Contact me at [REDACTED]
-```
-
-Done inline, without stopping the stream.
-
----
-
-## 🌐 Try it in Your Browser
-
-StreamGuard runs entirely in your browser via WebAssembly
-
-Check out the **[interactive browser demo](examples/browser-demo/)** to see guardrails in action:
-
-- Real-time text filtering
-- Pattern detection and redaction
-- Streaming simulation
-- Zero backend required
-
-To run the demo locally:
-
-```bash
-# Build WASM module
-wasm-pack build --target web --out-dir examples/browser-demo/pkg
-
-# Go to demo folder
-cd examples/browser-demo
-
-# Option 1: Node.js (requires http-server: npm install -g http-server)
-npm run serve
-
-# Option 2: Python
-python3 -m http.server 8080
-```
-
-Then open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ---
 
