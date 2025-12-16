@@ -12,6 +12,7 @@ Environment Variables:
     OPENAI_API_KEY: Your OpenAI API key (for real LLM examples)
 """
 
+import os
 import sys
 sys.path.insert(0, './pkg-python')
 
@@ -174,6 +175,7 @@ def example3_streaming_chain_with_guardrails():
     guard.add_pattern_rule(PatternRule.url_rewrite('[LINK_REMOVED]'))
     # Note: Simple patterns like ['password', 'is'] are for demonstration.
     # In production, use more specific patterns to avoid false positives.
+    # Example: ['my', 'password', 'is'] or context-aware rules with scoring.
     guard.add_forbidden_sequence(
         ForbiddenSequenceRule.strict(
             ['password', 'is'],
@@ -322,7 +324,6 @@ def example6_real_openai_integration():
     
     try:
         from langchain_openai import ChatOpenAI
-        import os
         
         if 'OPENAI_API_KEY' not in os.environ:
             print("⚠️  OPENAI_API_KEY not set. Skipping real API call.")
