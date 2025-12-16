@@ -294,7 +294,7 @@ def example5_multi_rule_scoring():
     print("Processing stream:")
     
     output = ""
-    decision = None
+    blocked = False
     for chunk in simulate_streaming_response(response, chunk_size=12):
         decision = guard.feed(chunk)
         score = guard.current_score()
@@ -303,11 +303,12 @@ def example5_multi_rule_scoring():
         
         if decision.is_block():
             print(f"🚫 Blocked at score {score}: {decision.reason()}")
+            blocked = True
             break
         
         output += chunk
     
-    if decision and not decision.is_block():
+    if not blocked:
         print(f"✓ Allowed with score {guard.current_score()}")
 
 
