@@ -1,11 +1,37 @@
-//! Forbidden sequence detection using DFA-like state machines
+//! Forbidden sequence detection using DFA-based state machines
 //!
 //! This rule detects forbidden token sequences in a streaming manner,
 //! handling partial matches across chunk boundaries.
+//!
+//! # Implementation Details
+//!
+//! This implementation uses the [aho-corasick](https://docs.rs/aho-corasick/) library for efficient
+//! multi-pattern matching with DFA-based automaton. The aho-corasick algorithm provides:
+//!
+//! - **O(n + m)** time complexity where n is text length and m is pattern length
+//! - **Linear memory usage** independent of the number of patterns
+//! - **Deterministic matching** using the LeftmostFirst strategy
+//! - **Efficient handling** of multiple patterns simultaneously
+//! - **Unicode support** for international text
+//!
+//! ## Benefits of aho-corasick
+//!
+//! 1. **Performance**: Significantly faster than naive string matching for multiple patterns
+//! 2. **Memory efficiency**: Compact DFA representation with minimal overhead
+//! 3. **Streaming-friendly**: Designed for incremental text processing
+//! 4. **Battle-tested**: Widely used in security and text processing applications
+//! 5. **Deterministic**: Same input always produces the same output
+//!
+//! ## Pattern Matching Strategy
+//!
+//! The implementation uses `MatchKind::LeftmostFirst` to ensure deterministic behavior
+//! when multiple patterns overlap. This guarantees predictable results across all platforms.
 
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+
+use aho_corasick::{AhoCorasick, AhoCorasickBuilder, MatchKind};
 
 use crate::core::{Decision, Rule};
 
@@ -60,8 +86,8 @@ impl SequenceConfig {
 
 /// A rule that blocks when a forbidden sequence of tokens is detected
 ///
-/// This implementation uses a simple DFA-like state machine to detect
-/// forbidden sequences while processing the stream incrementally.
+/// This implementation uses the aho-corasick library for efficient DFA-based
+/// pattern matching to detect forbidden sequences while processing the stream incrementally.
 ///
 /// # Behavior
 ///
@@ -103,6 +129,10 @@ impl SequenceConfig {
 pub struct ForbiddenSequenceRule {
     /// The sequence of tokens to detect
     tokens: Vec<String>,
+    /// Aho-Corasick automaton for efficient token matching
+    ac: AhoCorasick,
+    /// Aho-Corasick automaton for stop words (if any)
+    stop_words_ac: Option<AhoCorasick>,
     /// Current position in the sequence (0-based)
     state: usize,
     /// Buffer for partial token matching across chunks
@@ -127,9 +157,40 @@ impl ForbiddenSequenceRule {
     /// * `tokens` - The sequence of tokens that trigger blocking
     /// * `reason` - Human-readable reason for blocking
     /// * `config` - Configuration for matching behavior
+    ///
+    /// # Panics
+    ///
+    /// Panics if `tokens` is empty. Use at least one token to create a valid rule.
     pub fn new<S: AsRef<str>>(tokens: Vec<S>, reason: &str, config: SequenceConfig) -> Self {
+        let tokens_owned: Vec<String> = tokens.iter().map(|s| s.as_ref().to_string()).collect();
+        
+        // Validate that we have at least one token
+        assert!(!tokens_owned.is_empty(), "ForbiddenSequenceRule requires at least one token");
+        
+        // Build Aho-Corasick automaton for the tokens
+        // Use MatchKind::LeftmostFirst for deterministic matching
+        // This cannot fail since we validated tokens are non-empty
+        let ac = AhoCorasickBuilder::new()
+            .match_kind(MatchKind::LeftmostFirst)
+            .build(&tokens_owned)
+            .expect("Failed to build Aho-Corasick automaton (this should never happen)");
+        
+        // Build Aho-Corasick automaton for stop words if any
+        let stop_words_ac = if !config.stop_words.is_empty() {
+            Some(
+                AhoCorasickBuilder::new()
+                    .match_kind(MatchKind::LeftmostFirst)
+                    .build(&config.stop_words)
+                    .expect("Failed to build stop words automaton (this should never happen)")
+            )
+        } else {
+            None
+        };
+        
         Self {
-            tokens: tokens.iter().map(|s| s.as_ref().to_string()).collect(),
+            tokens: tokens_owned,
+            ac,
+            stop_words_ac,
             state: 0,
             buffer: String::new(),
             reason: reason.to_string(),
@@ -151,9 +212,23 @@ impl ForbiddenSequenceRule {
     }
 
     /// Create a rule with scoring
+    ///
+    /// # Panics
+    ///
+    /// Panics if `tokens` is empty. Use at least one token to create a valid rule.
     pub fn new_with_score<S: AsRef<str>>(tokens: Vec<S>, reason: &str, score: u32) -> Self {
+        let tokens_owned: Vec<String> = tokens.iter().map(|s| s.as_ref().to_string()).collect();
+        assert!(!tokens_owned.is_empty(), "ForbiddenSequenceRule requires at least one token");
+        
+        let ac = AhoCorasickBuilder::new()
+            .match_kind(MatchKind::LeftmostFirst)
+            .build(&tokens_owned)
+            .expect("Failed to build Aho-Corasick automaton (this should never happen)");
+        
         Self {
-            tokens: tokens.iter().map(|s| s.as_ref().to_string()).collect(),
+            tokens: tokens_owned,
+            ac,
+            stop_words_ac: None,
             state: 0,
             buffer: String::new(),
             reason: reason.to_string(),
@@ -165,9 +240,23 @@ impl ForbiddenSequenceRule {
     }
 
     /// Create a rule with rewrite support
+    ///
+    /// # Panics
+    ///
+    /// Panics if `tokens` is empty. Use at least one token to create a valid rule.
     pub fn new_with_rewrite<S: AsRef<str>>(tokens: Vec<S>, replacement: &str) -> Self {
+        let tokens_owned: Vec<String> = tokens.iter().map(|s| s.as_ref().to_string()).collect();
+        assert!(!tokens_owned.is_empty(), "ForbiddenSequenceRule requires at least one token");
+        
+        let ac = AhoCorasickBuilder::new()
+            .match_kind(MatchKind::LeftmostFirst)
+            .build(&tokens_owned)
+            .expect("Failed to build Aho-Corasick automaton (this should never happen)");
+        
         Self {
-            tokens: tokens.iter().map(|s| s.as_ref().to_string()).collect(),
+            tokens: tokens_owned,
+            ac,
+            stop_words_ac: None,
             state: 0,
             buffer: String::new(),
             reason: "rewrite forbidden sequence".to_string(),
@@ -180,8 +269,9 @@ impl ForbiddenSequenceRule {
 
     /// Check if buffer contains any stop word and reset if found
     fn check_stop_words(&mut self) -> bool {
-        for stop_word in &self.config.stop_words {
-            if self.buffer.contains(stop_word.as_str()) {
+        if let Some(ref ac) = self.stop_words_ac {
+            // Use aho-corasick to find stop words efficiently
+            if ac.is_match(&self.buffer) {
                 // Found a stop word - reset the sequence
                 self.state = 0;
                 self.buffer.clear();
@@ -191,7 +281,7 @@ impl ForbiddenSequenceRule {
         false
     }
 
-    /// Check if the current buffer + new text matches the next token
+    /// Check if the current buffer + new text matches the next token using aho-corasick
     fn check_match(&mut self, chunk: &str) -> bool {
         // Append chunk to buffer
         self.buffer.push_str(chunk);
@@ -225,7 +315,8 @@ impl ForbiddenSequenceRule {
             return false;
         }
 
-        // Try to match tokens in sequence (with optional gaps)
+        // Use aho-corasick to find any pattern matches in the buffer
+        // We iterate through tokens in sequence and look for each one
         loop {
             if self.state >= self.tokens.len() {
                 return true; // Matched entire sequence
@@ -233,20 +324,34 @@ impl ForbiddenSequenceRule {
 
             let target = &self.tokens[self.state];
 
-            // Check if buffer contains the target token
-            if let Some(pos) = self.buffer.find(target) {
+            // Use aho-corasick to check if the target token exists in the buffer
+            // Since we may have duplicate tokens, we can't rely on pattern IDs alone
+            // We need to find the leftmost occurrence of our target token
+            let mut leftmost_match: Option<aho_corasick::Match> = None;
+            for mat in self.ac.find_iter(&self.buffer) {
+                let matched_token = &self.tokens[mat.pattern().as_usize()];
+                // Check if this match is for our current target token
+                if matched_token == target {
+                    // Keep track of the leftmost match
+                    if leftmost_match.is_none() || mat.start() < leftmost_match.unwrap().start() {
+                        leftmost_match = Some(mat);
+                    }
+                    break; // LeftmostFirst should give us the first occurrence already
+                }
+            }
+            
+            if let Some(mat) = leftmost_match {
                 // Found the token - advance state
                 self.state += 1;
 
                 // Clear buffer up to and including the matched token
-                let after = pos + target.len();
+                let after = mat.end();
                 self.buffer = self.buffer[after..].to_string();
 
                 // Check if we've matched the entire sequence
                 if self.state >= self.tokens.len() {
                     return true;
                 }
-                // Continue loop to try matching next token immediately
             } else {
                 // Token not found yet - need more input
                 break;

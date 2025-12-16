@@ -271,7 +271,7 @@ Decisions are final and immediate.
 
 ### Implemented ✅
 
-- **Forbidden sequences**: DFA-like state machine with configurable gap handling and stop words
+- **Forbidden sequences**: DFA-based state machine using the aho-corasick library for efficient multi-pattern matching, with configurable gap handling and stop words
 - **Pattern detection**: Hand-coded matchers for emails, URLs, IPv4 addresses, credit cards
 - **Risk scoring**: Cumulative scoring with configurable thresholds and decay
 - **Rewrite/redaction**: Inline content replacement for both sequences and patterns
