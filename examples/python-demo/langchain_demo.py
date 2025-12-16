@@ -59,6 +59,7 @@ def example1_basic_streaming_with_guardrails():
     print("Streaming with guardrails:")
     output = ""
     blocked = False
+    rewritten = False
     
     for chunk in simulate_streaming_response(llm_response, chunk_size=8):
         decision = guard.feed(chunk)
@@ -69,13 +70,14 @@ def example1_basic_streaming_with_guardrails():
         elif decision.is_rewrite():
             output = decision.rewritten_text()
             print(f'\n[Rewritten: {output}]')
+            rewritten = True
             break
         elif decision.is_block():
             print(f'\n🚫 Stream blocked: {decision.reason()}')
             blocked = True
             break
     
-    if not blocked and not guard.feed('').is_rewrite():
+    if not blocked and not rewritten:
         print(f'\n✓ Complete output: {output}')
 
 
@@ -170,6 +172,8 @@ def example3_streaming_chain_with_guardrails():
     # Setup guardrails
     guard = GuardEngine()
     guard.add_pattern_rule(PatternRule.url_rewrite('[LINK_REMOVED]'))
+    # Note: Simple patterns like ['password', 'is'] are for demonstration.
+    # In production, use more specific patterns to avoid false positives.
     guard.add_forbidden_sequence(
         ForbiddenSequenceRule.strict(
             ['password', 'is'],
@@ -345,7 +349,18 @@ def example6_real_openai_integration():
         
         output = ""
         for chunk in llm.stream(prompt):
-            content = chunk.content if hasattr(chunk, 'content') else str(chunk)
+            # Extract content from LangChain chunk - handles different chunk types
+            if hasattr(chunk, 'content'):
+                content = chunk.content
+            elif isinstance(chunk, str):
+                content = chunk
+            else:
+                # Skip unsupported chunk types
+                continue
+            
+            # Skip empty chunks
+            if not content:
+                continue
             
             decision = guard.feed(content)
             
