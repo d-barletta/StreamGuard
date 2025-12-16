@@ -31,10 +31,16 @@ Or use the build script:
 ### Run Examples
 
 ```bash
+# Basic examples
 python demo.py
+
+# LangChain integration examples
+python langchain_demo.py
 ```
 
 ## Examples Included
+
+### Basic Examples (`demo.py`)
 
 ### 1. Basic Forbidden Sequence Detection
 Demonstrates blocking harmful content patterns incrementally.
@@ -56,6 +62,31 @@ Efficient processing of multiple documents with engine reuse.
 
 ### 7. Generator Pattern
 Python generator-based streaming with guardrails.
+
+### LangChain Integration Examples (`langchain_demo.py`)
+
+**Note**: LangChain examples work with or without the LangChain library installed. Without it, they use simulated streaming.
+
+#### 1. Basic Streaming with Guardrails
+LangChain-style streaming with real-time content filtering.
+
+#### 2. Callback Handler Integration
+Custom LangChain callback handler that applies guardrails to token generation.
+
+#### 3. Streaming Chain with Guardrails
+Generator pattern for LangChain streaming chains with inline filtering.
+
+#### 4. RAG Pipeline with Dual Guardrails
+Shows guardrails on both retrieved documents and LLM output.
+
+#### 5. Multi-Rule Scoring
+Cumulative risk scoring across multiple guardrail rules.
+
+#### 6. Real OpenAI Integration
+Live example with OpenAI API (requires `OPENAI_API_KEY`).
+
+#### 7. Async Streaming Pattern
+Conceptual example for async/await integration with LangChain.
 
 ## Integration Patterns
 
@@ -120,6 +151,41 @@ async def check_content(text: str):
         "reason": decision.reason() if decision.is_block() else None
     }
 ```
+
+### LangChain Integration
+
+```python
+from langchain_openai import ChatOpenAI
+from streamguard import GuardEngine, PatternRule
+
+def guarded_langchain_stream(llm, prompt, guard_engine):
+    """Stream LLM responses through StreamGuard"""
+    for chunk in llm.stream(prompt):
+        content = chunk.content if hasattr(chunk, 'content') else str(chunk)
+        decision = guard_engine.feed(content)
+        
+        if decision.is_allow():
+            yield content
+        elif decision.is_rewrite():
+            yield decision.rewritten_text()
+            break
+        elif decision.is_block():
+            raise ValueError(f"Blocked: {decision.reason()}")
+
+# Usage
+guard = GuardEngine()
+guard.add_pattern_rule(PatternRule.email_rewrite('[EMAIL]'))
+
+llm = ChatOpenAI(streaming=True)
+for chunk in guarded_langchain_stream(llm, "Write a welcome email", guard):
+    print(chunk, end='', flush=True)
+```
+
+See `langchain_demo.py` for complete examples including:
+- Custom callback handlers
+- RAG pipeline integration
+- Async streaming patterns
+- Risk scoring
 
 ## Performance Tips
 
