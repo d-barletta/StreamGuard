@@ -28,6 +28,7 @@ examples/node-demo/node_modules/
 
 # Python build artifacts
 examples/python-demo/pkg-python/
+examples/python-demo/.venv/
 *.pyc
 __pycache__/
 *.pyd

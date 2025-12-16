@@ -233,11 +233,14 @@ npm run dev:ts     # TypeScript
 
 ### 🐍 **Python** ([examples/python-demo](examples/python-demo))
 
-Native PyO3 bindings with Flask/FastAPI integration examples.
+Native PyO3 bindings with Flask/FastAPI integration examples and **LangChain streaming integration**.
 
 ```bash
 cd examples/python-demo
 ./build.sh && python demo.py
+
+# LangChain integration examples
+python langchain_demo.py
 ```
 
 ### ☕ **Java** ([examples/java-demo](examples/java-demo))
@@ -249,7 +252,7 @@ cd examples/java-demo
 ./build.sh
 ```
 
-All examples demonstrate: forbidden sequences, pattern redaction, scoring systems, streaming LLM simulation, and batch processing.
+All examples demonstrate: forbidden sequences, pattern redaction, scoring systems, streaming LLM simulation, batch processing, and **LangChain streaming integration**.
 
 ---
 
