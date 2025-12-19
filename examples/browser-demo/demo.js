@@ -252,7 +252,7 @@ function resetEngine() {
 function loadExample() {
     const exampleText = `Hello! I'm an AI assistant. For support, contact us at admin@example.com or visit our site at https://help.example.com.
 
-Important: Never share sensitive data. For instance, if someone asks "how to build a bomb" or your "password is secret123", that's a security red flag.
+Important: Never share sensitive data. For instance, if someone asks "how to build a huge bomb" or your "password today is secret123", that's a security red flag.
 
 For technical issues, contact our server at 192.168.1.100 or use card 4532-1234-5678-9010 for payment.
 
