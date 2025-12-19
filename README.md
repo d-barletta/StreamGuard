@@ -6,6 +6,12 @@ StreamGuard is an **open-source guardrail engine written in Rust** that inspects
 
 Unlike LLM-based moderation or post-hoc filtering, StreamGuard works **inline, deterministically, and incrementally**.
 
+## 🌐 Try it now
+
+**[🚀 Live Demo](https://d-barletta.github.io/StreamGuard/)** - Try StreamGuard now!
+
+StreamGuard runs entirely in your browser via WebAssembly.
+
 ![StreamGuard Demo](examples/demo.gif)
 
 ---
@@ -109,7 +115,7 @@ Existing safety mechanisms are:
 StreamGuard applies **Intrusion Detection System (IDS) principles** to LLM outputs.
 
 | Network IDS | StreamGuard |
-|------------|------------|
+| ------------ | ------------ |
 | Packet | Token / text chunk |
 | TCP stream | LLM output stream |
 | Signature | Guardrail rule |
