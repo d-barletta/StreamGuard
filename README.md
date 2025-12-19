@@ -352,7 +352,7 @@ They are **complementary**, not competing.
 - ✅ Risk scoring with thresholds and decay
 - ✅ Rewrite/redaction support
 - ✅ Comprehensive test suite (158 tests)
-- ✅ Zero external dependencies
+- ✅ Minimal dependencies
 - ✅ WASM support (browser + Node.js)
 - ✅ Python bindings (PyO3)
 - ✅ Java bindings (JNI)
