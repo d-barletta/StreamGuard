@@ -396,10 +396,9 @@ This project values:
 
 - clear design
 - deterministic behavior
-- strong documentation
 - testable rules
 
-Contributions are welcome once the core engine stabilizes.
+Contributions are welcome!
 
 ---
 
