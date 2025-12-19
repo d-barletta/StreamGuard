@@ -108,11 +108,81 @@ header h1 {
     border-radius: 4px;
     padding-left: 8px;
     transition: background-color 0.2s;
+    position: relative;
+}
+
+.rule-group label span:not(.info-icon) {
+    flex: 1;
 }
 
 .rule-group label:hover {
     background-color: rgba(37, 99, 235, 0.05);
    
+}
+
+/* Info icon tooltip */
+.info-icon {
+    cursor: help;
+    font-size: 1em;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    padding-right: 8px;
+}
+
+.info-icon:hover {
+    opacity: 1;
+}
+
+.info-icon::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    right: 0;
+    background: #1e293b;
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-family: 'Courier New', monospace;
+    white-space: pre;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-5px);
+    transition: opacity 0.2s, transform 0.2s;
+    min-width: 280px;
+    max-width: 400px;
+    word-wrap: break-word;
+    line-height: 1.5;
+}
+
+.info-icon::after {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    right: 8px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #1e293b;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.info-icon:hover::before,
+.info-icon:hover::after {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .rule-group input[type="checkbox"] {
@@ -123,7 +193,9 @@ header h1 {
 }
 
 /* Highlight complex rules */
-#rule-jailbreak, #rule-admin {
+
+label:has(#rule-jailbreak) span:first-of-type,
+label:has(#rule-admin) span:first-of-type {
     font-weight: 500;
 }
 

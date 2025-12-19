@@ -23,19 +23,23 @@
                         <h3>Redact (Rewrite)</h3>
                         <label>
                             <input type="checkbox" id="rule-email" checked>
-                            Redact emails → [EMAIL_REDACTED]
+                            <span>Redact emails → [EMAIL_REDACTED]</span>
+                            <span class="info-icon" data-tooltip="engine.addEmailRedaction('[EMAIL_REDACTED]');">ⓘ</span>
                         </label>
                         <label>
                             <input type="checkbox" id="rule-url">
-                            Redact URLs → [URL_REMOVED]
+                            <span>Redact URLs → [URL_REMOVED]</span>
+                            <span class="info-icon" data-tooltip="engine.addUrlRedaction('[URL_REMOVED]');">ⓘ</span>
                         </label>
                         <label>
                             <input type="checkbox" id="rule-ip">
-                            Redact IPv4 addresses → [IP_REDACTED]
+                            <span>Redact IPv4 addresses → [IP_REDACTED]</span>
+                            <span class="info-icon" data-tooltip="engine.addIpRedaction('[IP_REDACTED]');">ⓘ</span>
                         </label>
                         <label>
                             <input type="checkbox" id="rule-credit-card">
-                            Redact credit cards → [CC_REDACTED]
+                            <span>Redact credit cards → [CC_REDACTED]</span>
+                            <span class="info-icon" data-tooltip="engine.addCreditCardRedaction('[CC_REDACTED]');">ⓘ</span>
                         </label>
                     </div>
 
@@ -43,19 +47,23 @@
                         <h3>Block (Stop Stream)</h3>
                         <label>
                             <input type="checkbox" id="rule-forbidden" checked>
-                            Block: "how to build bomb"
+                            <span>Block: "how to build bomb"</span>
+                            <span class="info-icon" data-tooltip="engine.addForbiddenSequence(['how', 'to', 'build', 'bomb'], 'forbidden weapons instructions');">ⓘ</span>
                         </label>
                         <label>
                             <input type="checkbox" id="rule-forbidden-2" checked>
-                            Block: "password is"
+                            <span>Block: "password is"</span>
+                            <span class="info-icon" data-tooltip="engine.addForbiddenSequenceStrict(['password', 'is'], 'credential leak detected');">ⓘ</span>
                         </label>
                         <label>
                             <input type="checkbox" id="rule-jailbreak">
-                            Block: DAN jailbreak pattern (multi-token DFA)
+                            <span>Block: DAN jailbreak pattern (multi-token DFA)</span>
+                            <span class="info-icon" data-tooltip="engine.addForbiddenSequence(['ignore', 'previous', 'instructions'], 'jailbreak attempt detected');">ⓘ</span>
                         </label>
                         <label>
                             <input type="checkbox" id="rule-admin">
-                            Block: "ignore" → "instructions" → "admin" (gaps allowed)
+                            <span>Block: "ignore" → "instructions" → "admin" (gaps allowed)</span>
+                            <span class="info-icon" data-tooltip="engine.addForbiddenSequence(['ignore', 'instructions', 'admin'], 'admin override attempt');">ⓘ</span>
                         </label>
                     </div>
 
@@ -63,7 +71,8 @@
                         <h3>Scoring</h3>
                         <label>
                             <input type="checkbox" id="enable-scoring">
-                            Enable score threshold
+                            <span>Enable score threshold</span>
+                            <span class="info-icon" data-tooltip="engine = WasmGuardEngine.withScoreThreshold(100);">ⓘ</span>
                         </label>
                         <div id="scoring-config" style="display: none; margin-top: 10px;">
                             <label>
