@@ -1,6 +1,6 @@
 {
   "name": "streamguard-node-example",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Node.js examples for StreamGuard guardrail engine",
   "main": "index.js",
   "scripts": {
