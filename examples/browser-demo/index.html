@@ -49,6 +49,14 @@
                             <input type="checkbox" id="rule-forbidden-2" checked>
                             Block: "password is"
                         </label>
+                        <label>
+                            <input type="checkbox" id="rule-jailbreak">
+                            Block: DAN jailbreak pattern (multi-token DFA)
+                        </label>
+                        <label>
+                            <input type="checkbox" id="rule-admin">
+                            Block: "ignore" → "instructions" → "admin" (gaps allowed)
+                        </label>
                     </div>
 
                     <div class="rule-group">
@@ -72,6 +80,16 @@
             <div class="section">
                 <h2>Test Stream</h2>
                 <div class="test-area">
+                    <div style="margin-bottom: 10px;">
+                        <label for="example-selector" style="font-weight: bold; margin-right: 10px;">Select Example:</label>
+                        <select id="example-selector" class="btn btn-secondary" style="padding: 8px; min-width: 200px;">
+                            <option value="basic">Basic (Redaction)</option>
+                            <option value="block">Security Block</option>
+                            <option value="jailbreak">Jailbreak Detection</option>
+                            <option value="complex">Complex DFA Patterns</option>
+                            <option value="streaming">Streaming Edge Cases</option>
+                        </select>
+                    </div>
                     <textarea id="input-text"
                         placeholder="Type or paste text to test guardrails...">Hello! I'm an AI assistant. For support, contact us at admin@example.com or visit our site at https://help.example.com.
 
@@ -82,7 +100,6 @@ For technical issues, contact our server at 192.168.1.100 or use card 4532-1234-
 We can help with legitimate questions about technology, learning, and problem-solving. Our team is available 24/7!</textarea>
 
                     <div class="controls">
-                        <button id="btn-load-example" class="btn btn-secondary">Load Example</button>
                         <button id="btn-process-chunk" class="btn btn-primary">Process as Chunk</button>
                         <button id="btn-process-stream" class="btn btn-primary">Simulate Streaming</button>
                         <button id="btn-clear" class="btn btn-secondary">Clear</button>
@@ -111,6 +128,10 @@ We can help with legitimate questions about technology, learning, and problem-so
                 StreamGuard is a deterministic, streaming-first guardrail engine for LLM outputs.
                 <br>
                 <a href="https://github.com/d-barletta/StreamGuard" target="_blank">View on GitHub</a>
+                •
+                <a href="EXAMPLES.md" target="_blank">Complex Examples Guide</a>
+                •
+                <a href="DFA_EXAMPLES.md" target="_blank">DFA Visual Guide</a>
             </p>
         </footer>
     </div>

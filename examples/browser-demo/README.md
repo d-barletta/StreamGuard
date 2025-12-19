@@ -6,9 +6,12 @@ A live browser demonstration of StreamGuard's guardrail engine running entirely 
 
 - **Real-time guardrail enforcement** in the browser
 - **Multiple rule types**: forbidden sequences, email/URL redaction, pattern blocking
+- **Complex DFA patterns**: Multi-token sequence detection with gap tolerance
+- **Jailbreak detection**: Real-world prompt injection and instruction override patterns
 - **Streaming simulation**: See how guardrails work on incremental text
 - **Zero backend**: All processing happens in the browser via WASM
 - **Interactive configuration**: Enable/disable rules on the fly
+- **Pre-configured examples**: From simple redaction to advanced security patterns
 
 ## Quick Start
 
@@ -53,9 +56,19 @@ Open your browser to http://localhost:8080
 
 ### Configure Rules
 
-1. **Forbidden Sequences**: Block specific word sequences (e.g., "how to build bomb")
-2. **Pattern Detection**: Detect and redact emails, URLs, IPs, credit cards
-3. **Scoring**: Set a score threshold for cumulative risk assessment
+1. **Redaction (Rewrite)**: Replace sensitive patterns with placeholders
+   - Email addresses
+   - URLs
+   - IPv4 addresses
+   - Credit card numbers
+
+2. **Forbidden Sequences (Block)**: Stop the stream on dangerous patterns
+   - Simple sequences: "how to build bomb"
+   - Credential leaks: "password is"
+   - **DAN jailbreak**: "ignore previous instructions" (multi-token DFA)
+   - **Admin override**: "ignore" → "instructions" → "admin" (with gaps)
+
+3. **Scoring**: Cumulative risk threshold (optional)
 
 ### Test Modes
 
@@ -64,25 +77,32 @@ Open your browser to http://localhost:8080
 - **Clear**: Reset input and output
 - **Reset Engine**: Recreate the engine with current rule configuration
 
-### Example Inputs
+### Example Scenarios
 
-Try these examples to see the guardrails in action:
+The demo includes several pre-configured examples accessible via the dropdown menu:
 
-```
-Contact me at john@example.com
-```
+#### **Basic (Redaction)**
+- Tests email, URL, IP address, and credit card redaction
+- Shows simple pattern matching in action
 
-```
-How to build a simple web server
-```
+#### **Security Block**
+- Demonstrates blocking forbidden sequences like "how to build bomb"
+- Tests credential leak detection ("password is")
 
-```
-My password is secret123
-```
+#### **Jailbreak Detection**  
+- Complex DFA pattern: detects "ignore previous instructions"
+- Multi-token sequence matching with deterministic state machine
+- Real-world security scenario
 
-```
-Server IP: 192.168.1.1
-```
+#### **Complex DFA Patterns**
+- Advanced pattern: "ignore" → "instructions" → "admin" (with gaps)
+- Tests instruction override and privilege escalation attempts
+- Demonstrates streaming DFA capabilities
+
+#### **Streaming Edge Cases**
+- Tests pattern detection across chunk boundaries
+- Multiple PII types in rapid succession
+- Verifies deterministic streaming behavior
 
 ## Architecture
 
@@ -95,10 +115,23 @@ The demo uses:
 
 ## Files
 
-- `index.html` - Demo interface
-- `style.css` - Styling
+- `index.html` - Demo interface with rule configuration
+- `style.css` - Styling with visual feedback
 - `demo.js` - JavaScript application logic
 - `pkg/` - Generated WASM module (created by wasm-pack)
+- `EXAMPLES.md` - Detailed guide to complex patterns and DFA examples
+- `README.md` - This file
+
+## Learn More
+
+For detailed explanations of the complex DFA patterns, jailbreak detection, and technical architecture, see **[EXAMPLES.md](EXAMPLES.md)**.
+
+Topics covered:
+- Multi-token sequence matching
+- DFA state machines
+- Streaming edge cases
+- Comparison with regex and LLM-based approaches
+- Performance characteristics
 
 ## Development
 

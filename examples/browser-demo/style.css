@@ -105,12 +105,39 @@ header h1 {
     padding: 8px 0;
     cursor: pointer;
     font-size: 0.95rem;
+    border-radius: 4px;
+    padding-left: 8px;
+    transition: background-color 0.2s;
+}
+
+.rule-group label:hover {
+    background-color: rgba(37, 99, 235, 0.05);
+   
 }
 
 .rule-group input[type="checkbox"] {
     width: 18px;
     height: 18px;
     cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+/* Highlight complex rules */
+#rule-jailbreak, #rule-admin {
+    font-weight: 500;
+}
+
+select {
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+select:focus {
+    outline: none;
+    border-color: var(--primary-color);
 }
 
 .test-area {
