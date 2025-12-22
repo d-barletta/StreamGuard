@@ -4,9 +4,9 @@
 
 use jni::JNIEnv;
 use jni::objects::{JClass, JObject, JString};
-use jni::sys::{jlong, jint, jobject, jboolean};
+use jni::sys::{jlong, jint, jobject};
 use alloc::boxed::Box;
-use alloc::string::{String, ToString};
+use alloc::string::String;
 use alloc::vec::Vec;
 
 use crate::core::Decision;

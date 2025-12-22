@@ -3,7 +3,6 @@
 //! Provides native Python extension with zero-copy performance
 
 use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
 use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
@@ -221,7 +220,7 @@ impl PyGuardEngine {
 
 /// Python module definition
 #[pymodule]
-fn streamguard(_py: Python, m: &PyModule) -> PyResult<()> {
+fn streamguard(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyGuardEngine>()?;
     m.add_class::<PyForbiddenSequenceRule>()?;
     m.add_class::<PyPatternRule>()?;
